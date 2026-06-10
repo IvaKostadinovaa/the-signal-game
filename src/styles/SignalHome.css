@@ -1,0 +1,85 @@
+.container {
+  height: 100vh;
+  width: 100%;
+  background: url("src/images/signal.jpg") center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 700px;
+}
+
+.header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.header .light {
+  font-weight: 400;
+  margin-right: 8px;
+}
+
+.subtitle {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.tags {
+  margin: 20px 0;
+}
+
+.tag {
+  display: inline-block;
+  margin: 5px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: white;
+}
+
+.blue { background: #3b82f6; }
+.purple { background: #8b5cf6; }
+.orange { background: #f59e0b; }
+.green { background: #22c55e; }
+
+.play-btn {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-size: 1.5rem;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.play-btn:hover {
+  transform: scale(1.05);
+}
+
+.footer-buttons {
+  margin-top: 30px;
+}
+
+.small-btn {
+  margin: 5px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}

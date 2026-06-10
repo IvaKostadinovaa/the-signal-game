@@ -1,0 +1,88 @@
+.splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: auto;
+}
+
+.splash__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  padding: 48px 40px;
+}
+
+.splash__title {
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #0a1e28;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.splash__subtitle {
+  font-size: clamp(1rem, 4vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #cc0000;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.splash__description {
+  font-size: 1.05rem;
+  color: #0a1e28;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+.splash__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 36px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.splash__btn {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.splash__btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.splash__btn:active {
+  transform: translateY(0);
+}
+
+.splash__btn--primary {
+  background: #cc0000;
+  color: #fff;
+  border-color: #cc0000;
+}
+
+.splash__btn--secondary {
+  background: #fff;
+  color: #0a1e28;
+  border-color: #ddd;
+}

@@ -1,0 +1,41 @@
+:root {
+  --ink: #1C1917;
+  --ink-light: #44403C;
+  --cream: #F7F3EC;
+  --cream-2: #EDE8DF;
+  --cream-3: #E2DAD0;
+  --red: #B91C1C;
+  --red-light: #FEE2E2;
+  --gold: #92400E;
+  --gold-light: #FEF3C7;
+  --green: #14532D;
+  --green-light: #DCFCE7;
+  --steel: #78716C;
+  --border: #C7BBAA;
+  --shadow: rgba(28,25,23,.12);
+
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Libre Baskerville', serif;
+
+  /* ── Type scale ───────────────────────────────────────── */
+  --fs-xs:   10px;   /* notification badges, smallest counters   */
+  --fs-sm:   11px;   /* timestamps, metadata, secondary captions */
+  --fs-base: 13px;   /* body copy, card text, VERA flags         */
+  --fs-md:   15px;   /* larger body, metric values               */
+  --fs-lg:   18px;   /* subheadings, section labels              */
+  --fs-xl:   22px;   /* major headings                           */
+  --fs-2xl:  28px;   /* screen / story headings                  */
+  --fs-3xl:  36px;   /* hero headings                            */
+
+  /* ── Semantic roles ──────────────────────────────────── */
+  --fs-label:   var(--fs-sm);    /* badges, tags, uppercase labels      */
+  --fs-caption: var(--fs-sm);    /* button subtitles, secondary info    */
+  --fs-body:    var(--fs-base);  /* main readable text                  */
+  --fs-nav:     var(--fs-base);  /* sidebar / menu items                */
+  --fs-btn:     var(--fs-base);  /* button labels                       */
+  --fs-subhead: var(--fs-lg);    /* panel / section titles              */
+  --fs-heading: var(--fs-xl);    /* screen headings                     */
+  --fs-title:   var(--fs-2xl);   /* major story / screen titles         */
+}

@@ -1,0 +1,138 @@
+.htp-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  background: rgba(15, 25, 40, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.htp-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 48px 40px 40px;
+  max-width: 740px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid #cc0000;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.htp-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #0a1420;
+  text-transform: uppercase;
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.htp-divider {
+  width: 40px;
+  height: 3px;
+  background: #cc0000;
+  margin: 18px auto 32px;
+}
+
+.htp-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.htp-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 12px 20px;
+  border: 1px solid #e8ecf0;
+  border-radius: 4px;
+  background: #f8fafc;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.htp-step:hover {
+  border-color: #cc000030;
+  box-shadow: 0 4px 16px rgba(204, 0, 0, 0.07);
+}
+
+.htp-step-number {
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #cc0000;
+  text-transform: uppercase;
+}
+
+.htp-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.htp-icon-img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+}
+
+.htp-step-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #0a1420;
+  text-transform: uppercase;
+}
+
+.htp-step-desc {
+  font-size: 0.84rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.htp-goal {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+
+.htp-goal strong {
+  color: #0a1420;
+  font-weight: 700;
+}
+
+.htp-btn {
+  background: #cc0000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 14px 56px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.htp-btn:hover {
+  background: #aa0000;
+  transform: translateY(-1px);
+}
+
+.htp-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .htp-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
