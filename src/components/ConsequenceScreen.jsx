@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import correctSfx from '../audio/correct.mp3';
+import incorrectSfx from '../audio/incorrect.mp3';
 
 const CONFETTI_SCREEN = [
   { color: '#4ade80', x: 5,  delay: 0,    size: 10, rot: 15  },
@@ -29,59 +32,38 @@ const CONFETTI_SCREEN = [
 ];
 
 const METRIC_CONFIG = {
-  trust:         { label: 'TRUST',      color: '#22c55e', bg: 'rgba(34,197,94,0.09)'    },
-  speed:         { label: 'SPEED',      color: '#f59e0b', bg: 'rgba(245,158,11,0.09)'   },
-  legalRisk:     { label: 'LEGAL RISK', color: '#ef4444', bg: 'rgba(239,68,68,0.09)'    },
-  audienceReach: { label: 'AUDIENCE',   color: '#3b82f6', bg: 'rgba(59,130,246,0.09)'   },
+  trust:         { label: 'TRUST',      color: '#16a34a', border: '#bbf7d0', bg: '#f0fdf4' },
+  speed:         { label: 'SPEED',      color: '#d97706', border: '#fde68a', bg: '#fffbeb' },
+  legalRisk:     { label: 'LEGAL RISK', color: '#dc2626', border: '#fecaca', bg: '#fff5f5' },
+  audienceReach: { label: 'AUDIENCE',   color: '#2563eb', border: '#bfdbfe', bg: '#eff6ff' },
 };
-
-function MetricIcon({ type, color }) {
-  if (type === 'trust') return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  );
-  if (type === 'speed') return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-  if (type === 'legalRisk') return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22V12M12 12L8 8M12 12L16 8" />
-      <path d="M3 6l4 4 4-4M13 6l4 4 4-4" />
-      <line x1="3" y1="20" x2="21" y2="20" />
-    </svg>
-  );
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  );
-}
 
 export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
   const correct = outcome?.correct ?? false;
-  const xpGain = correct ? 80 : 20;
-  const accentColor  = correct ? '#16a34a' : '#dc2626';
-  const accentBadgeBg = correct ? '#dcfce7' : '#fee2e2';
-  const verdictCardBg = correct ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.05)';
-  const verdictBorder = correct ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.15)';
 
-  const topKeys = Object.entries(deltas || {})
-    .filter(([, v]) => typeof v === 'number' && v !== 0)
-    .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a))
-    .slice(0, 2)
-    .map(([k]) => k);
+  useEffect(() => {
+    if (correct) {
+      const audio = new Audio(correctSfx);
+      audio.play().catch(() => {});
+    } else {
+      const audio = new Audio(incorrectSfx);
+      audio.volume = 0.07;
+      audio.play().catch(() => {});
+      const t = setTimeout(() => { audio.pause(); }, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [correct]);
+  const accentColor = correct ? '#16a34a' : '#dc2626';
+
+  const topKeys = ['trust', 'speed', 'legalRisk'].filter(
+    (k) => typeof (deltas || {})[k] === 'number' && (deltas || {})[k] !== 0
+  );
 
   return createPortal(
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(10,20,30,0.78)',
+      background: correct ? 'rgba(22,163,74,0.28)' : 'rgba(220,38,38,0.28)',
       backdropFilter: 'blur(6px)',
       display: 'flex',
       alignItems: 'center',
@@ -108,121 +90,109 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
       ))}
 
       <div style={{
-        background: correct ? '#f0fdf9' : '#fff5f5',
+        background: '#fff',
         borderRadius: 16,
         width: '100%',
         maxWidth: 420,
-        border: correct ? '1px solid #bbf7d0' : '1px solid #fecaca',
+        border: '1px solid #e2e8f0',
         boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         overflow: 'hidden',
         position: 'relative',
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       }}>
 
-        {/* Header strip — matches story screen "STORY PACKAGE" style */}
-        <div style={{
-          background: correct ? '#dcfce7' : '#fee2e2',
-          borderBottom: correct ? '1px solid #bbf7d0' : '1px solid #fecaca',
-          padding: '11px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <span style={{
+        <div style={{ padding: '24px 24px 26px' }}>
+
+          {/* DECISION RESULT label */}
+          <div style={{
+            textAlign: 'center',
             fontSize: 10,
             fontWeight: 700,
-            color: '#3b82f6',
-            letterSpacing: '0.12em',
+            letterSpacing: '0.18em',
+            color: '#94a3b8',
+            marginBottom: 18,
+            textTransform: 'uppercase',
           }}>
-            EDITORIAL VERDICT
-          </span>
-          <span style={{
-            fontSize: 10,
-            fontWeight: 800,
-            padding: '3px 9px',
-            borderRadius: 4,
-            background: accentBadgeBg,
-            color: accentColor,
-            letterSpacing: '0.06em',
-          }}>
-            {correct ? '✓ CORRECT' : '✗ WRONG'}
-          </span>
-        </div>
+            DECISION RESULT
+          </div>
 
-        <div style={{ padding: '20px 22px 24px' }}>
-
-          {/* Verdict block — icon chip + headline, like story-top card */}
+          {/* Icon + verdict title */}
           <div style={{
-            background: verdictCardBg,
-            border: `1px solid ${verdictBorder}`,
-            borderRadius: 12,
-            padding: '14px 16px',
             display: 'flex',
-            alignItems: 'flex-start',
-            gap: 14,
-            marginBottom: 14,
+            alignItems: 'center',
+            gap: 16,
+            marginBottom: 8,
           }}>
             <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: accentBadgeBg,
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: accentColor,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              boxShadow: correct
+                ? '0 4px 16px rgba(22,163,74,0.35)'
+                : '0 4px 16px rgba(220,38,38,0.35)',
             }}>
               {correct ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2.8" strokeLinecap="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               )}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 20,
-                fontWeight: 900,
-                color: accentColor,
-                letterSpacing: '-0.01em',
-                lineHeight: 1.15,
-                marginBottom: 5,
-              }}>
-                {correct ? 'CORRECT DECISION' : 'WRONG DECISION'}
-              </div>
-              <p style={{
-                fontSize: 13,
-                color: '#475569',
-                margin: 0,
-                lineHeight: 1.5,
-              }}>
-                {outcome?.subtitle || outcome?.title || ''}
-              </p>
+            <div style={{
+              fontSize: 22,
+              fontWeight: 900,
+              color: accentColor,
+              letterSpacing: '0.01em',
+              lineHeight: 1.1,
+            }}>
+              {correct ? 'CORRECT DECISION' : 'WRONG DECISION'}
             </div>
           </div>
 
-          {/* True reveal — matches VERA recommendation block */}
+          {/* Subtitle */}
+          <p style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#334155',
+            margin: '0 0 20px',
+            lineHeight: 1.5,
+            paddingLeft: 68,
+          }}>
+            {outcome?.subtitle || outcome?.title || ''}
+          </p>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: '#f1f5f9', marginBottom: 16 }} />
+
+          {/* True reveal */}
           {outcome?.trueReveal && (
             <div style={{
-              background: '#f0f9ff',
-              borderLeft: '3px solid #3b82f6',
-              borderRadius: '0 8px 8px 0',
+              background: correct ? '#f0fdf4' : '#fff5f5',
+              border: correct ? '1.5px solid #16a34a' : '1.5px solid #dc2626',
+              borderRadius: 8,
               padding: '10px 14px',
-              marginBottom: 14,
+              marginBottom: 16,
             }}>
               <div style={{
                 fontSize: 9,
                 fontWeight: 800,
-                color: '#3b82f6',
-                letterSpacing: '0.12em',
+                color: correct ? '#16a34a' : '#dc2626',
+                letterSpacing: '0.14em',
                 marginBottom: 5,
+                textTransform: 'uppercase',
               }}>
-                TRUE REVEAL
+                True Reveal
               </div>
-              <p style={{ fontSize: 12, color: '#1e3a5f', lineHeight: 1.55, margin: 0 }}>
+              <p style={{ fontSize: 12, color: correct ? '#14532d' : '#7f1d1d', lineHeight: 1.55, margin: 0 }}>
                 {outcome.trueReveal}
               </p>
             </div>
@@ -232,9 +202,9 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
           {topKeys.length > 0 && (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: `repeat(${topKeys.length}, 1fr)`,
               gap: 8,
-              marginBottom: 12,
+              marginBottom: 14,
             }}>
               {topKeys.map((key) => {
                 const cfg = METRIC_CONFIG[key] || METRIC_CONFIG.trust;
@@ -244,8 +214,8 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
                 return (
                   <div key={key} style={{
                     background: cfg.bg,
-                    border: `1.5px solid ${cfg.color}30`,
-                    borderRadius: 12,
+                    border: `1.5px solid ${cfg.border}`,
+                    borderRadius: 10,
                     padding: '12px 14px',
                   }}>
                     <div style={{
@@ -254,10 +224,11 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
                       color: cfg.color,
                       letterSpacing: '0.12em',
                       marginBottom: 6,
+                      textTransform: 'uppercase',
                     }}>
                       {cfg.label}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
                       <span style={{
                         fontSize: 28,
                         fontWeight: 900,
@@ -266,31 +237,13 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
                       }}>
                         {isPos ? `+${delta}` : delta}
                       </span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: deltaColor, opacity: 0.7 }}>%</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: deltaColor, opacity: 0.65 }}>%</span>
                     </div>
                   </div>
                 );
               })}
             </div>
           )}
-
-          {/* XP row */}
-          <div style={{
-            background: 'rgba(255,255,255,0.6)',
-            border: correct ? '1px solid #bbf7d0' : '1px solid #fecaca',
-            borderRadius: 10,
-            padding: '10px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: outcome?.feedback ? 12 : 18,
-          }}>
-            <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, letterSpacing: '0.04em' }}>SESSION XP</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 16 }}>⭐</span>
-              <span style={{ fontSize: 16, fontWeight: 900, color: '#d97706' }}>+{xpGain} XP</span>
-            </div>
-          </div>
 
           {/* Feedback quote */}
           {outcome?.feedback && (
@@ -299,33 +252,34 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
               fontSize: 12,
               color: '#94a3b8',
               textAlign: 'center',
-              margin: '0 0 18px',
-              lineHeight: 1.5,
-              padding: '0 4px',
+              margin: '0 0 20px',
+              lineHeight: 1.6,
+              padding: '0 8px',
             }}>
               "{outcome.feedback}"
             </p>
           )}
 
-          {/* Continue — matches decision button style */}
+          {/* Continue button */}
           <button
             type="button"
             onClick={onNext}
             style={{
               width: '100%',
-              background: '#2563eb',
+              background: '#0a1e28',
               color: '#fff',
               border: 'none',
               borderBottom: '3px solid rgba(0,0,0,0.2)',
               borderRadius: 10,
-              padding: '12px',
+              padding: '13px',
               fontSize: 13,
               fontWeight: 800,
-              letterSpacing: '0.08em',
+              letterSpacing: '0.1em',
               cursor: 'pointer',
               transition: 'opacity .15s, transform .1s',
+              fontFamily: 'inherit',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.opacity = '.9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseOver={(e) => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseOut={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = ''; }}
           >
             CONTINUE

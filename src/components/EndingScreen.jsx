@@ -20,19 +20,42 @@ const CONFETTI = [
   { c: '#facc15', t: 6,  l: 96, s: 9,  round: false, r: 45   },
 ];
 
-function ShieldIcon() {
+function TrustShield() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7z" />
-      <polyline points="9 12 11 14 15 10" />
+    <svg width="54" height="60" viewBox="0 0 90 100" fill="none">
+      <defs>
+        <linearGradient id="esTrustGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="100%" stopColor="#16a34a" />
+        </linearGradient>
+        <linearGradient id="esTrustBorder" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fde68a" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+      </defs>
+      <path d="M45 4 L82 18 L82 50 C82 72 64 88 45 96 C26 88 8 72 8 50 L8 18 Z" fill="url(#esTrustBorder)" />
+      <path d="M45 10 L76 22 L76 50 C76 69 60 83 45 90 C30 83 14 69 14 50 L14 22 Z" fill="url(#esTrustGrad)" />
+      <polyline points="30,50 40,62 62,38" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
 
-function StarIcon() {
+function SpeedShield() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    <svg width="54" height="60" viewBox="0 0 90 100" fill="none">
+      <defs>
+        <linearGradient id="esSpeedGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fcd34d" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+        <linearGradient id="esSpeedBorder" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fef9c3" />
+          <stop offset="100%" stopColor="#f59e0b" />
+        </linearGradient>
+      </defs>
+      <path d="M45 4 L82 18 L82 50 C82 72 64 88 45 96 C26 88 8 72 8 50 L8 18 Z" fill="url(#esSpeedBorder)" />
+      <path d="M45 10 L76 22 L76 50 C76 69 60 83 45 90 C30 83 14 69 14 50 L14 22 Z" fill="url(#esSpeedGrad)" />
+      <polygon points="50,28 34,54 44,54 40,72 56,46 46,46" fill="white" opacity="0.95" />
     </svg>
   );
 }
@@ -43,14 +66,6 @@ function computeTitle(meters) {
   return 'THE SIGNAL STRUGGLES';
 }
 
-function computeAchievements(meters) {
-  const badges = [];
-  if (meters.trust >= 25)     badges.push({ name: 'Verified',            color: '#f59e0b', Icon: StarIcon   });
-  if (meters.legalRisk <= 35) badges.push({ name: 'NVC Master',          color: '#22c55e', Icon: ShieldIcon });
-                               badges.push({ name: 'Deep Fake Detective', color: '#15803d', Icon: ShieldIcon });
-  if (meters.trust >= 45)     badges.push({ name: 'Whistleblower',       color: '#f59e0b', Icon: ShieldIcon });
-  return badges.slice(0, 4);
-}
 
 function computeInsight(meters) {
   if (meters.trust >= 50) return 'You chose accuracy over clicks.\nYour audience trusts you, and that\'s what matters.';
@@ -58,10 +73,9 @@ function computeInsight(meters) {
   return 'Speed cost you credibility.\nNext time, verify before you publish.';
 }
 
-export default function EndingScreen({ meters, xp, onRestart }) {
-  const title        = computeTitle(meters);
-  const achievements = computeAchievements(meters);
-  const insight      = computeInsight(meters);
+export default function EndingScreen({ meters, xp, onRestart, earnedBadges = {} }) {
+  const title   = computeTitle(meters);
+  const insight = computeInsight(meters);
 
   return (
     <div style={{
@@ -84,44 +98,32 @@ export default function EndingScreen({ meters, xp, onRestart }) {
         border: '1px solid #e2e8f0',
       }}>
 
-        {/* Title row with confetti */}
+        {/* Title row */}
         <div style={{
-          position: 'relative',
-          padding: '20px 28px 18px',
+          padding: '28px 28px 22px',
           borderBottom: '1px solid #f1f5f9',
-          overflow: 'hidden',
         }}>
-          {CONFETTI.map((dot, i) => (
-            <div key={i} style={{
-              position: 'absolute',
-              top: `${dot.t}%`,
-              left: `${dot.l}%`,
-              width: dot.s,
-              height: dot.s,
-              background: dot.c,
-              borderRadius: dot.round ? '50%' : 3,
-              transform: dot.r ? `rotate(${dot.r}deg)` : undefined,
-              opacity: 0.8,
-              pointerEvents: 'none',
-            }} />
-          ))}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            position: 'relative',
-            zIndex: 1,
+            fontSize: 'clamp(2.8rem, 8vw, 4.5rem)',
+            fontWeight: 900,
+            color: '#0a1e28',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+            textTransform: 'uppercase',
+            fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
           }}>
-            <span style={{ color: '#2563eb', fontSize: 16, fontWeight: 900 }}>⚡</span>
-            <span style={{
-              fontSize: 17,
-              fontWeight: 900,
-              color: '#1e293b',
-              letterSpacing: '0.04em',
-            }}>
-              ENDING: {title}
-            </span>
-            <span style={{ marginLeft: 'auto', fontSize: 30 }}>🏆</span>
+            THE END
+          </div>
+          <div style={{
+            fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+            fontWeight: 800,
+            color: '#cc0000',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginTop: 6,
+            fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+          }}>
+            {title}
           </div>
         </div>
 
@@ -200,32 +202,24 @@ export default function EndingScreen({ meters, xp, onRestart }) {
             </div>
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                {achievements.map((badge, i) => (
-                  <div key={i} style={{ textAlign: 'center', width: 58 }}>
-                    <div style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: '50%',
-                      background: badge.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 6px',
-                      boxShadow: `0 4px 14px ${badge.color}55`,
-                    }}>
-                      <badge.Icon />
-                    </div>
-                    <div style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      color: '#475569',
-                      lineHeight: 1.3,
-                    }}>
-                      {badge.name}
-                    </div>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                {!earnedBadges.trust && !earnedBadges.speed && (
+                  <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic', padding: '8px 0' }}>
+                    No badges earned
                   </div>
-                ))}
+                )}
+                {earnedBadges.trust && (
+                  <div style={{ textAlign: 'center' }}>
+                    <TrustShield />
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', color: '#16a34a', textTransform: 'uppercase', marginTop: 4 }}>Trust</div>
+                  </div>
+                )}
+                {earnedBadges.speed && (
+                  <div style={{ textAlign: 'center' }}>
+                    <SpeedShield />
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', color: '#d97706', textTransform: 'uppercase', marginTop: 4 }}>Speed</div>
+                  </div>
+                )}
               </div>
 
               <div style={{
@@ -265,9 +259,9 @@ export default function EndingScreen({ meters, xp, onRestart }) {
             onClick={onRestart}
             style={{
               flex: 1,
-              background: 'transparent',
-              color: '#2563eb',
-              border: '2px solid #2563eb',
+              background: '#0a1e28',
+              color: '#ffffff',
+              border: '2px solid #0a1e28',
               borderRadius: 10,
               padding: '14px',
               fontSize: 13,
@@ -276,8 +270,8 @@ export default function EndingScreen({ meters, xp, onRestart }) {
               cursor: 'pointer',
               transition: 'background .15s',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = '#eff6ff'; }}
-            onMouseOut={(e)  => { e.currentTarget.style.background = 'transparent'; }}
+            onMouseOver={(e) => { e.currentTarget.style.background = '#1e3a4a'; }}
+            onMouseOut={(e)  => { e.currentTarget.style.background = '#0a1e28'; }}
           >
             PLAY AGAIN
           </button>

@@ -183,6 +183,7 @@ export const stories = [
       status: 'same-story',
       shares: 18400,
       speedPenalty: null,
+      time: '14 min ago',
       note: 'NewsFirst ran the 400% figure without verification. Same story. 18,400 shares and counting.',
     },
     consequences: {
@@ -205,7 +206,7 @@ export const stories = [
         subtitle: 'Other outlets ran the manipulated statistics unchecked. The Signal stayed silent when it could have led the correction.',
         trueReveal: 'The data was manipulated. The Signal could have published the correction and built credibility — but chose silence instead.',
         feedback: 'Not every silence is wisdom. Sometimes it is an opportunity missed.',
-        correct: false,
+        correct: true,
       },
     },
   },
@@ -279,6 +280,7 @@ export const stories = [
       status: 'named-silent',
       shares: 24000,
       speedPenalty: -20,
+      time: '8 min ago',
       note: 'NewsFirst published the clipped quote. The Signal has not responded. 24,000 shares.',
     },
     consequences: {
@@ -301,7 +303,7 @@ export const stories = [
         subtitle: 'Other outlets ran the clipped quote without verification. The Signal missed the chance to lead the correction.',
         trueReveal: 'The quote was real but context-dependent. A verification-first publication would have set the record straight — and built credibility.',
         feedback: 'Silence is not always responsible. Sometimes it is just absent.',
-        correct: false,
+        correct: true,
       },
     },
   },
@@ -317,7 +319,7 @@ export const stories = [
     callDescription: '€40,000 to drop the Chen story. The arrangement remains confidential.',
     callDeltas: {
       publish: { trust: -30, speed: 0, legalRisk: 20, audienceReach: 10 },
-      drop:    { trust: 18, speed: 0, legalRisk: -5, audienceReach: 0 },
+      drop:    { trust: 16, speed: 0, legalRisk: -5, audienceReach: 0 },
     },
     callConsequences: {
       publish: {
@@ -379,7 +381,7 @@ export const stories = [
     },
     deltas: {
       publish: { trust: -22, speed: 16, legalRisk: 25, audienceReach: -8 },
-      verify:  { trust: 16, speed: -10, legalRisk: -5, audienceReach: 6 },
+      verify:  { trust: 18, speed: -10, legalRisk: -5, audienceReach: 6 },
       drop:    { trust: -8, speed: -8, legalRisk: 8, audienceReach: -5 },
     },
     interruptions: [
@@ -398,6 +400,7 @@ export const stories = [
       status: 'same-story',
       shares: 31000,
       speedPenalty: null,
+      time: '22 min ago',
       note: 'NewsFirst ran the image without verification. 31,000 shares.',
     },
     consequences: {
@@ -420,7 +423,7 @@ export const stories = [
         subtitle: 'The Signal stayed silent as the false image spread. The correction came too late to prevent public confusion.',
         trueReveal: 'The image was from 2017 and the subject was misidentified. The Signal could have led the forensic correction — instead it missed the moment.',
         feedback: 'Staying quiet is not the same as staying credible.',
-        correct: false,
+        correct: true,
       },
     },
   },
@@ -535,6 +538,7 @@ export const stories = [
       status: 'different-angle',
       shares: 41000,
       speedPenalty: null,
+      time: '1 hr ago',
       note: 'NewsFirst is the origin of this story. They claim exclusivity on the documents.',
     },
     consequences: {
@@ -557,7 +561,7 @@ export const stories = [
         subtitle: 'The Signal stayed silent as the unverified claim spread. Without a credible counter-narrative, the allegations dominated public discourse.',
         trueReveal: 'The documents never existed. The Signal could have investigated and published an evidence-gap exposé — but chose silence over scrutiny.',
         feedback: 'Dropping a story and verifying a story are not the same thing.',
-        correct: false,
+        correct: true,
       },
     },
   },
@@ -633,6 +637,7 @@ export const stories = [
       status: 'different-angle',
       shares: 89000,
       speedPenalty: null,
+      time: '3 hr ago',
       note: 'NewsFirst running a different version of the Petrov story.',
     },
     consequences: {
@@ -655,7 +660,7 @@ export const stories = [
         subtitle: "Other outlets published the deepfake. Without The Signal's forensic verification, the public had no credible counter-narrative before election day.",
         trueReveal: "The video was a deepfake. The Signal's verification tools could have exposed it — instead, others published it and the disinformation spread unchecked.",
         feedback: 'Staying silent in a disinformation crisis is not caution — it is absence.',
-        correct: false,
+        correct: true,
       },
     },
   },

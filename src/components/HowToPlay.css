@@ -12,13 +12,12 @@
 
 .htp-card {
   background: #ffffff;
-  border-radius: 4px;
+  border-radius: 20px;
   padding: 48px 40px 40px;
   max-width: 740px;
   width: 100%;
   text-align: center;
-  border: 1px solid #e2e8f0;
-  border-top: 4px solid #cc0000;
+  border: none;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
@@ -28,15 +27,8 @@
   letter-spacing: 0.06em;
   color: #0a1420;
   text-transform: uppercase;
-  margin-bottom: 0;
+  margin-bottom: 28px;
   line-height: 1;
-}
-
-.htp-divider {
-  width: 40px;
-  height: 3px;
-  background: #cc0000;
-  margin: 18px auto 32px;
 }
 
 .htp-steps {
@@ -53,7 +45,7 @@
   gap: 12px;
   padding: 22px 12px 20px;
   border: 1px solid #e8ecf0;
-  border-radius: 4px;
+  border-radius: 14px;
   background: #f8fafc;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -104,15 +96,15 @@
 }
 
 .htp-goal strong {
-  color: #0a1420;
+  color: #cc0000;
   font-weight: 700;
 }
 
 .htp-btn {
-  background: #cc0000;
+  background: #0a1e28;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 14px 56px;
   font-size: 0.85rem;
   font-weight: 800;
@@ -123,7 +115,7 @@
 }
 
 .htp-btn:hover {
-  background: #aa0000;
+  background: #0d2535;
   transform: translateY(-1px);
 }
 

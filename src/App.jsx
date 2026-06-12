@@ -1,4 +1,5 @@
 import { useReducer, useState, useEffect, useRef } from 'react';
+import clockSfx from './audio/clock.mp3';
 import { useNavigate } from 'react-router-dom';
 import { stories as ALL_STORIES, CHARACTERS, LEVELS, LEVEL_STORIES } from './game/gameData.js';
 import MetricsBar from './components/MetricsBar.jsx';
@@ -11,9 +12,17 @@ import EndingScreen from './components/EndingScreen.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import HowToPlay from './components/HowToPlay.jsx';
 import TimeoutModal from './components/TimeoutModal.jsx';
-import TrustAchievementModal from './components/TrustAchievementModal.jsx';
-import SpeedAchievementModal from './components/SpeedAchievementModal.jsx';
 import './styles/game.css';
+
+const GAME_TICKER_ITEMS = [
+  '● BREAKING NEWS',
+  '● FAKE REPORT SPREADS ONLINE',
+  '● MEDIA LITERACY UNDER THREAT',
+  '● DISINFORMATION CAMPAIGN DETECTED',
+  '● SOURCES UNVERIFIED',
+  '● TRUST IN MEDIA AT ALL-TIME LOW',
+  '● BREAKING NEWS',
+];
 
 const clamp = (v) => Math.max(0, Math.min(100, v));
 
@@ -31,6 +40,9 @@ function NewsFirstTicker({ newsfirst, headline }) {
       <span className="newsfirst-ticker__brand">NEWSFIRST</span>
       <span className="newsfirst-ticker__headline">{headline}</span>
       <div className="newsfirst-ticker__right">
+        {newsfirst.time && (
+          <span className="newsfirst-ticker__time" style={{ color: cfg.text }}>{newsfirst.time}</span>
+        )}
         <span className="newsfirst-ticker__badge" style={{ background: cfg.badgeBg, color: cfg.badgeText }}>
           {cfg.label}
           {newsfirst.status === 'named-silent' && newsfirst.shares && <> · {newsfirst.shares.toLocaleString()} shares</>}
@@ -54,9 +66,11 @@ const initialState = {
   levelProgress: { 1: 'active', 2: 'locked', 3: 'locked' },
   lastOutcome: null,
   lastDeltas: null,
+  actionId: 0,
   showVERAReport: false,
   showCharacters: false,
   postBribeReturnToStory: false,
+  bribeAccepted: false,
   bribeHandled: false,
   correctDecisions: 0,
   meters: { trust: 0, speed: 0, legalRisk: 0, audienceReach: 0 },
@@ -84,29 +98,47 @@ function reducer(state, action) {
     case 'MAKE_DECISION': {
       const story = ALL_STORIES.find((s) => s.id === state.selectedStoryId);
       if (!story) return state;
-      const d = (story.callDeltas || story.deltas)[action.decision] || {};
-      const outcome = (story.callConsequences || story.consequences)?.[action.decision] || null;
-      const speedPenalty = action.timed ? -20 : 0;
-      const isBribeDecline = !!story.callConsequences && action.decision === 'drop';
+      const isCallPhase = !state.bribeHandled && !!story.callConsequences;
+      const d = (isCallPhase ? story.callDeltas : story.deltas)?.[action.decision] || {};
+      const outcome = (isCallPhase ? story.callConsequences : story.consequences)?.[action.decision] || null;
+      const isCorrect = !!outcome?.correct;
+
+      // Speed: time-based (0–20 pts), plus verify costs speed (intentionally slower)
+      const initialTime = action.initialTime || story.initialTime || 1;
+      const timeRatio = action.timed ? 0 : Math.max(0, Math.min(1, (action.timeLeft || 0) / initialTime));
+      const verifyPenalty = !isCallPhase && action.decision === 'verify' ? (d.speed || -8) : 0;
+      const speedDelta = action.timed ? -20 : Math.round(timeRatio * 20) + verifyPenalty;
+
+      // Correct decisions always give +trust (min +5) and never increase legalRisk
+      const trustDelta = isCorrect ? Math.max(d.trust || 0, 5) : (d.trust || 0);
+      const legalDelta = isCorrect ? Math.min(d.legalRisk || 0, 0) : Math.max(d.legalRisk || 0, 5);
+
+      const isBribeDecline = isCallPhase && action.decision === 'drop';
+      const isBribeAccept  = isCallPhase && action.decision !== 'drop';
       return {
         ...state,
         view: 'consequence',
         showVERAReport: false,
         lastOutcome: outcome,
-        lastDeltas: d,
+        lastDeltas: { ...d, trust: trustDelta, legalRisk: legalDelta, speed: speedDelta },
+        actionId: state.actionId + 1,
         postBribeReturnToStory: isBribeDecline,
-        xp: state.xp + (outcome?.correct ? 80 : 20),
-        correctDecisions: state.correctDecisions + (outcome?.correct ? 1 : 0),
+        bribeAccepted: isBribeAccept,
+        xp: state.xp + (isCorrect ? 80 : 20),
+        correctDecisions: state.correctDecisions + (isCorrect ? 1 : 0),
         meters: {
-          trust: clamp(state.meters.trust + (d.trust || 0)),
-          speed: clamp(state.meters.speed + (d.speed || 0) + speedPenalty),
-          legalRisk: clamp(state.meters.legalRisk + (d.legalRisk || 0)),
+          trust: clamp(state.meters.trust + trustDelta),
+          speed: clamp(state.meters.speed + speedDelta),
+          legalRisk: clamp(state.meters.legalRisk + legalDelta),
           audienceReach: clamp(state.meters.audienceReach + (d.audienceReach || 0)),
         },
       };
     }
 
     case 'NEXT': {
+      if (state.bribeAccepted) {
+        return { ...state, view: 'ending', bribeAccepted: false };
+      }
       if (state.postBribeReturnToStory) {
         return {
           ...state,
@@ -189,12 +221,33 @@ export default function App() {
 
   const selectedStory = ALL_STORIES.find((s) => s.id === state.selectedStoryId) ?? null;
 
+  const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
-  const [showTrustAchievement, setShowTrustAchievement] = useState(false);
-  const [showSpeedAchievement, setShowSpeedAchievement] = useState(false);
+  const [earnedTrustBadge, setEarnedTrustBadge] = useState(false);
+  const [earnedSpeedBadge, setEarnedSpeedBadge] = useState(false);
   const trustAchievementShown = useRef(false);
   const speedAchievementShown = useRef(false);
+  const clockAudioRef = useRef(null);
+  const [deltaParticles, setDeltaParticles] = useState([]);
+  const [metricFlash, setMetricFlash] = useState({});
+  const particleIdRef = useRef(0);
+
+  useEffect(() => {
+    if (timeLeft === 5) {
+      const audio = new Audio(clockSfx);
+      audio.loop = true;
+      audio.muted = isMutedRef.current;
+      audio.play().catch(() => {});
+      clockAudioRef.current = audio;
+    } else if (state.view !== 'storyReview') {
+      if (clockAudioRef.current) {
+        clockAudioRef.current.pause();
+        clockAudioRef.current = null;
+      }
+    }
+  }, [timeLeft, state.view]);
 
   useEffect(() => {
     setTimedOut(false);
@@ -217,18 +270,56 @@ export default function App() {
   }, [state.view, state.selectedStoryId]);
 
   useEffect(() => {
-    if (state.meters.trust > 25 && !trustAchievementShown.current) {
+    if (state.meters.trust > 60 && !trustAchievementShown.current) {
       trustAchievementShown.current = true;
-      setShowTrustAchievement(true);
+      setEarnedTrustBadge(true);
     }
   }, [state.meters.trust]);
 
   useEffect(() => {
-    if (state.meters.speed > 30 && !speedAchievementShown.current) {
+    if (state.meters.speed > 60 && state.meters.trust > 60 && !speedAchievementShown.current) {
       speedAchievementShown.current = true;
-      setShowSpeedAchievement(true);
+      setEarnedSpeedBadge(true);
     }
-  }, [state.meters.speed]);
+  }, [state.meters.speed, state.meters.trust]);
+
+  useEffect(() => {
+    setDeltaParticles([]);
+    setMetricFlash({});
+  }, [state.selectedStoryId]);
+
+  useEffect(() => {
+    if (!state.lastDeltas || state.actionId === 0) return;
+    const d = state.lastDeltas;
+
+    const particles = [];
+    const flash = {};
+    if (d.trust > 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'trust', delta: d.trust, neg: false });
+      flash.trust = true;
+    } else if (d.trust < 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'trust', delta: d.trust, neg: true });
+    }
+    if (d.speed > 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'speed', delta: d.speed, neg: false });
+      flash.speed = true;
+    } else if (d.speed < 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'speed', delta: d.speed, neg: true });
+    }
+    if (d.legalRisk > 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'legalRisk', delta: d.legalRisk, neg: false });
+    } else if (d.legalRisk < 0) {
+      particles.push({ id: ++particleIdRef.current, metric: 'legalRisk', delta: d.legalRisk, neg: true });
+    }
+    if (particles.length === 0) return;
+
+    setDeltaParticles(p => [...p, ...particles]);
+    setMetricFlash(flash);
+    const ids = new Set(particles.map(p => p.id));
+    const t1 = setTimeout(() => setDeltaParticles(p => p.filter(x => !ids.has(x.id))), 1600);
+    const t2 = setTimeout(() => setMetricFlash({}), 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [state.actionId]);
 
   const levelsWithStatus = LEVELS.map((l) => ({
     ...l,
@@ -253,7 +344,14 @@ export default function App() {
       <EndingScreen
         meters={state.meters}
         xp={state.xp}
-        onRestart={() => dispatch({ type: 'RESTART' })}
+        onRestart={() => {
+          dispatch({ type: 'RESTART' });
+          trustAchievementShown.current = false;
+          speedAchievementShown.current = false;
+          setEarnedTrustBadge(false);
+          setEarnedSpeedBadge(false);
+        }}
+        earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge }}
       />
     );
   }
@@ -274,23 +372,60 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {state.view === 'storyReview' && (
+        <div className="news-ticker">
+          <span className="news-ticker__label">LIVE</span>
+          <div className="news-ticker__track">
+            <div className="news-ticker__inner">
+              {[...GAME_TICKER_ITEMS, ...GAME_TICKER_ITEMS].map((item, i) => (
+                <span key={i} className="news-ticker__item">{item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <MetricsBar
         meters={state.meters}
         showCountdown={state.view === 'storyReview'}
         timeLeft={timeLeft}
+        isMuted={isMuted}
+        metricFlash={metricFlash}
+        onToggleMute={() => {
+          const next = !isMuted;
+          isMutedRef.current = next;
+          setIsMuted(next);
+          if (clockAudioRef.current) clockAudioRef.current.muted = next;
+        }}
       />
-      {state.view === 'storyReview' && selectedStory?.newsfirst && (
-        <NewsFirstTicker newsfirst={selectedStory.newsfirst} headline={selectedStory.title || selectedStory.headline} />
+      {deltaParticles.length > 0 && (
+        <div className="metric-particles-layer">
+          {deltaParticles.map(p => (
+            <div
+              key={p.id}
+              className={`metric-particle metric-particle--${p.metric}${p.neg ? ' metric-particle--down' : ''}`}
+              style={{
+                left: p.metric === 'trust'
+                  ? 'calc(105px + (100vw - 105px) / 6)'
+                  : p.metric === 'speed'
+                  ? 'calc(105px + (100vw - 105px) / 2)'
+                  : 'calc(105px + (100vw - 105px) * 5 / 6)',
+              }}
+            >
+              {p.neg ? '' : '+'}{p.delta} {p.metric.toUpperCase()}
+            </div>
+          ))}
+        </div>
       )}
       <div className="app-body">
         <div className="app-content" style={{ marginLeft: 0, width: '100%' }}>
           {(state.view === 'storyReview' || state.view === 'consequence') && selectedStory && (
             <StoryReview
               story={selectedStory}
-              onDecision={(decision) => dispatch({ type: 'MAKE_DECISION', decision })}
+              onDecision={(decision) => dispatch({ type: 'MAKE_DECISION', decision, timeLeft, initialTime: selectedStory.initialTime })}
               onViewReport={() => dispatch({ type: 'SHOW_VERA_REPORT' })}
               bribeHandled={state.bribeHandled}
               correctDecisions={state.correctDecisions}
+              earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge }}
             />
           )}
           {state.view === 'consequence' && (
@@ -304,23 +439,19 @@ export default function App() {
         </div>
       </div>
 
+      {state.view === 'storyReview' && selectedStory?.newsfirst && (
+        <NewsFirstTicker newsfirst={selectedStory.newsfirst} headline={selectedStory.title || selectedStory.headline} />
+      )}
+
       {state.view === 'storyReview' && timeLeft > 0 && timeLeft <= 5 && (
         <div className="alarm-overlay" />
-      )}
-
-      {showTrustAchievement && (
-        <TrustAchievementModal onClose={() => setShowTrustAchievement(false)} />
-      )}
-
-      {showSpeedAchievement && (
-        <SpeedAchievementModal onClose={() => setShowSpeedAchievement(false)} />
       )}
 
       {timedOut && state.view === 'storyReview' && (
         <TimeoutModal
           onDecision={(decision) => {
             setTimedOut(false);
-            dispatch({ type: 'MAKE_DECISION', decision, timed: true });
+            dispatch({ type: 'MAKE_DECISION', decision, timed: true, timeLeft: 0, initialTime: selectedStory?.initialTime });
           }}
         />
       )}

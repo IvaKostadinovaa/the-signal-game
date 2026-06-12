@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 const CONFETTI = [
   { color: '#fbbf24', x: 8,  delay: 0,    size: 9,  rot: 15  },
   { color: '#f97316', x: 16, delay: 0.12, size: 7,  rot: -30 },
@@ -20,26 +18,34 @@ const CONFETTI = [
 
 function LightningIcon() {
   return (
-    <svg width="80" height="90" viewBox="0 0 80 90" fill="none">
+    <svg width="90" height="100" viewBox="0 0 90 100" fill="none">
       <defs>
-        <linearGradient id="boltBg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fbbf24" />
+        <linearGradient id="boltShieldGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fcd34d" />
           <stop offset="100%" stopColor="#d97706" />
         </linearGradient>
-        <linearGradient id="boltGlow" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="boltShieldBorder" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#fef9c3" />
-          <stop offset="100%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#f59e0b" />
         </linearGradient>
-        <filter id="boltShadow" x="-30%" y="-15%" width="160%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="rgba(217,119,6,0.5)" />
+        <filter id="boltShieldShadow" x="-20%" y="-10%" width="140%" height="130%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(217,119,6,0.4)" />
         </filter>
       </defs>
-      {/* Outer glow circle */}
-      <circle cx="40" cy="45" r="38" fill="url(#boltBg)" filter="url(#boltShadow)" />
-      <circle cx="40" cy="45" r="38" fill="none" stroke="#fef08a" strokeWidth="2.5" opacity="0.6" />
+      {/* Border shield */}
+      <path
+        d="M45 4 L82 18 L82 50 C82 72 64 88 45 96 C26 88 8 72 8 50 L8 18 Z"
+        fill="url(#boltShieldBorder)"
+        filter="url(#boltShieldShadow)"
+      />
+      {/* Inner shield */}
+      <path
+        d="M45 10 L76 22 L76 50 C76 69 60 83 45 90 C30 83 14 69 14 50 L14 22 Z"
+        fill="url(#boltShieldGrad)"
+      />
       {/* Lightning bolt */}
       <polygon
-        points="46,12 26,48 38,48 34,78 54,42 42,42"
+        points="50,28 34,54 44,54 40,72 56,46 46,46"
         fill="white"
         opacity="0.95"
       />
@@ -47,14 +53,18 @@ function LightningIcon() {
   );
 }
 
+import { useEffect } from 'react';
+import badgeSfx from '../audio/badge.mp3';
+
 export default function SpeedAchievementModal({ onClose }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 6000);
+    new Audio(badgeSfx).play().catch(() => {});
+    const t = setTimeout(onClose, 2000);
     return () => clearTimeout(t);
   }, [onClose]);
 
   return (
-    <div className="speed-overlay" onClick={onClose}>
+    <div className="speed-overlay">
       {CONFETTI.map((c, i) => (
         <div
           key={i}
@@ -71,7 +81,7 @@ export default function SpeedAchievementModal({ onClose }) {
         />
       ))}
 
-      <div className="speed-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="speed-modal">
         {CONFETTI.slice(0, 8).map((c, i) => (
           <div
             key={i}
@@ -97,9 +107,6 @@ export default function SpeedAchievementModal({ onClose }) {
           The Signal beat everyone to the story.<br />You set the pace for the entire region.
         </div>
 
-        <button className="speed-modal__close" onClick={onClose}>
-          Keep Going
-        </button>
       </div>
     </div>
   );

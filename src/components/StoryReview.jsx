@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import notificationSfx from '../audio/notification.mp3';
+import dealSfx from '../audio/deal.mp3';
 import { createPortal } from 'react-dom';
 import VerifyModal from './VerifyModal.jsx';
 import alexImg from '../images/alex.png';
@@ -7,14 +9,14 @@ import imgCrimeStats     from '../images/level1_1.png';
 import imgPoliticianQuote from '../images/level1_2.png';
 import imgMayorChen      from '../images/level2_1.png';
 import imgElectionDocs   from '../images/level2_3.png';
-import imgDeepfake       from '../images/level3.png';
+import imgLevel3News     from '../images/level3_news.png';
 
 const STORY_IMAGES = {
   'crime-stats':      imgCrimeStats,
   'politician-quote': imgPoliticianQuote,
   'mayor-chen-image': imgMayorChen,
   'election-docs':    imgElectionDocs,
-  deepfake:           imgDeepfake,
+  deepfake:           imgLevel3News,
 };
 
 const PlayIcon = () => (
@@ -131,7 +133,7 @@ function VERADonut({ confidence, confidenceType }) {
   const r = 42;
   const circumference = 2 * Math.PI * r;
   const filled = (confidence / 100) * circumference;
-  const color = confidenceType === 'high' ? '#22c55e' : confidenceType === 'medium' ? '#f59e0b' : '#3b82f6';
+  const color = '#0a1e28';
 
   return (
     <div className="vera-donut">
@@ -167,8 +169,50 @@ function VERADonut({ confidence, confidenceType }) {
   );
 }
 
+const HURRY_MESSAGES = [
+  'Still there? We need an answer.',
+  'Last chance. Yes or no?',
+];
+
 function MessageScreen({ story, onDecision }) {
   const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const [hurryCount, setHurryCount] = useState(0);
+  const [vibrateKey, setVibrateKey] = useState(0);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = new Audio(dealSfx);
+    audio.play().catch(() => {});
+    audioRef.current = audio;
+    setTimeout(() => { audio.pause(); }, 1000);
+    setVibrateKey(k => k + 1);
+
+    const t1 = setTimeout(() => {
+      setHurryCount(1);
+      setVibrateKey(k => k + 1);
+      const a1 = new Audio(dealSfx);
+      a1.play().catch(() => {});
+      setTimeout(() => a1.pause(), 1000);
+    }, 5000);
+    const t2 = setTimeout(() => {
+      setHurryCount(2);
+      setVibrateKey(k => k + 1);
+      const a2 = new Audio(dealSfx);
+      a2.play().catch(() => {});
+      setTimeout(() => a2.pause(), 1000);
+    }, 9000);
+
+    return () => {
+      audio.pause();
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  function decide(choice) {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    onDecision(choice);
+  }
 
   return createPortal(
     <div style={{
@@ -182,14 +226,15 @@ function MessageScreen({ story, onDecision }) {
       zIndex: 500,
       padding: '24px 16px',
     }}>
+      <div key={vibrateKey} style={{ width: '100%', maxWidth: 390, animation: vibrateKey > 0 ? 'phoneVibrate 1s ease-in-out' : 'none' }}>
       <div style={{
         background: '#ffffff',
         borderRadius: 20,
         width: '100%',
-        maxWidth: 390,
         overflow: 'hidden',
         boxShadow: '0 40px 100px rgba(0,0,0,0.55)',
-        border: '1px solid #cbd5e1',
+        border: '2px solid #fde68a',
+        animation: 'phoneSlideUp 0.55s cubic-bezier(.22,.68,0,1.2) both, phonePulse 2s ease-in-out 0.6s infinite',
       }}>
 
         {/* Header */}
@@ -281,8 +326,40 @@ function MessageScreen({ story, onDecision }) {
             </div>
           </div>
 
+          {/* Hurry-up follow-up bubbles */}
+          {hurryCount >= 1 && (
+            <div style={{
+              background: '#f1f5f9',
+              borderRadius: '4px 16px 16px 16px',
+              padding: '10px 14px',
+              marginBottom: 10,
+              fontSize: 13,
+              color: '#1e293b',
+              fontStyle: 'italic',
+              lineHeight: 1.6,
+              animation: 'phoneSlideUp 0.3s ease both',
+            }}>
+              {HURRY_MESSAGES[0]}
+            </div>
+          )}
+          {hurryCount >= 2 && (
+            <div style={{
+              background: '#f1f5f9',
+              borderRadius: '4px 16px 16px 16px',
+              padding: '10px 14px',
+              marginBottom: 10,
+              fontSize: 13,
+              color: '#1e293b',
+              fontStyle: 'italic',
+              lineHeight: 1.6,
+              animation: 'phoneSlideUp 0.3s ease both',
+            }}>
+              {HURRY_MESSAGES[1]}
+            </div>
+          )}
+
           {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, marginTop: 10 }}>
             <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
             <span style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.16em' }}>YOUR RESPONSE</span>
             <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
@@ -292,7 +369,7 @@ function MessageScreen({ story, onDecision }) {
           <div style={{ display: 'flex', gap: 10 }}>
             <button
               type="button"
-              onClick={() => onDecision('drop')}
+              onClick={() => decide('drop')}
               style={{
                 flex: 1,
                 background: '#f1f5f9',
@@ -313,34 +390,35 @@ function MessageScreen({ story, onDecision }) {
             </button>
             <button
               type="button"
-              onClick={() => onDecision('publish')}
+              onClick={() => decide('publish')}
               style={{
                 flex: 1,
-                background: '#fffbeb',
-                color: '#92400e',
-                border: '1.5px solid #fde68a',
+                background: '#0a1e28',
+                color: '#fff',
+                border: 'none',
                 borderRadius: 12,
                 padding: '14px 10px',
                 fontSize: 11,
                 fontWeight: 800,
                 letterSpacing: '0.12em',
                 cursor: 'pointer',
-                transition: 'background .15s',
+                transition: 'opacity .15s',
               }}
-              onMouseOver={(e) => (e.currentTarget.style.background = '#fef3c7')}
-              onMouseOut={(e) => (e.currentTarget.style.background = '#fffbeb')}
+              onMouseOver={(e) => (e.currentTarget.style.opacity = '0.88')}
+              onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
             >
               ACCEPT
             </button>
           </div>
         </div>
       </div>
+      </div>
     </div>,
     document.body
   );
 }
 
-export default function StoryReview({ story, onDecision, onViewReport, bribeHandled, correctDecisions }) {
+export default function StoryReview({ story, onDecision, onViewReport, bribeHandled, correctDecisions, earnedBadges = {} }) {
   const [playing, setPlaying] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
@@ -377,6 +455,7 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
         setAlexBubblePos({ top: rect.top, left: rect.right + 14 });
       }
       setAlexVisible(true);
+      new Audio(notificationSfx).play().catch(() => {});
     }, 2000);
     return () => clearTimeout(id);
   }, [story.id, bribeHandled]);
@@ -395,7 +474,53 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
           <span className="sr-char__sub">Lead Editor</span>
         </button>
 
-
+        {/* Earned badges */}
+        {(earnedBadges.trust || earnedBadges.speed) && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginTop: 20 }}>
+            <div style={{ width: '100%', height: 1, background: '#e2e8f0', marginBottom: 2 }} />
+            <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.18em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Earned Badges</div>
+            {earnedBadges.trust && (
+              <div className="sr-badge" title="The Public's Trust" style={{ flexDirection: 'column', gap: 3 }}>
+                <svg width="54" height="60" viewBox="0 0 90 100" fill="none">
+                  <defs>
+                    <linearGradient id="sGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#4ade80" />
+                      <stop offset="100%" stopColor="#16a34a" />
+                    </linearGradient>
+                    <linearGradient id="sBorder" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#fde68a" />
+                      <stop offset="100%" stopColor="#d97706" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M45 4 L82 18 L82 50 C82 72 64 88 45 96 C26 88 8 72 8 50 L8 18 Z" fill="url(#sBorder)" />
+                  <path d="M45 10 L76 22 L76 50 C76 69 60 83 45 90 C30 83 14 69 14 50 L14 22 Z" fill="url(#sGrad)" />
+                  <polyline points="30,50 40,62 62,38" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+                <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.14em', color: '#16a34a', textTransform: 'uppercase' }}>Trust</span>
+              </div>
+            )}
+            {earnedBadges.speed && (
+              <div className="sr-badge" title="Breaking First" style={{ flexDirection: 'column', gap: 3 }}>
+                <svg width="54" height="60" viewBox="0 0 90 100" fill="none">
+                  <defs>
+                    <linearGradient id="bGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#fcd34d" />
+                      <stop offset="100%" stopColor="#d97706" />
+                    </linearGradient>
+                    <linearGradient id="bBorder" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#fef9c3" />
+                      <stop offset="100%" stopColor="#f59e0b" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M45 4 L82 18 L82 50 C82 72 64 88 45 96 C26 88 8 72 8 50 L8 18 Z" fill="url(#bBorder)" />
+                  <path d="M45 10 L76 22 L76 50 C76 69 60 83 45 90 C30 83 14 69 14 50 L14 22 Z" fill="url(#bGrad)" />
+                  <polygon points="50,28 34,54 44,54 40,72 56,46 46,46" fill="white" opacity="0.95" />
+                </svg>
+                <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.14em', color: '#d97706', textTransform: 'uppercase' }}>Speed</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Main content */}
@@ -421,9 +546,6 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
                   {storyImage && (
                     <img src={storyImage} alt={story.title} className="video-player__bg-img" />
                   )}
-                  <button className="video-player__play-btn" onClick={() => setPlaying(!playing)} aria-label="Play video">
-                    <PlayIcon />
-                  </button>
                 </div>
                 <div className="video-player__controls">
                   <button className="video-player__ctrl-btn" onClick={() => setPlaying(!playing)} aria-label="Play/pause">
@@ -541,7 +663,7 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
           zIndex: 300,
           width: 270,
           background: isPressure ? '#fffbf0' : '#ffffff',
-          border: isPressure ? '1.5px solid #f59e0b' : '1px solid #e2e8f0',
+          border: isPressure ? '1.5px solid #fde68a' : '1px solid #e2e8f0',
           borderRadius: 14,
           padding: '13px 14px 13px 16px',
           display: 'flex',
@@ -559,7 +681,7 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
             position: 'absolute', left: -9, top: 18,
             width: 0, height: 0,
             borderTop: '9px solid transparent', borderBottom: '9px solid transparent',
-            borderRight: `9px solid ${isPressure ? '#f59e0b' : '#e2e8f0'}`,
+            borderRight: `9px solid ${isPressure ? '#fde68a' : '#e2e8f0'}`,
           }} />
           <div style={{
             position: 'absolute', left: isPressure ? -6 : -7, top: 18,
@@ -568,10 +690,10 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
             borderRight: `9px solid ${isPressure ? '#fffbf0' : '#ffffff'}`,
           }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 9, fontWeight: 800, color: isPressure ? '#d97706' : '#94a3b8', letterSpacing: '0.12em', marginBottom: 5 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: isPressure ? '#d97706' : '#94a3b8', letterSpacing: '0.12em', marginBottom: 5 }}>
               ALEX JORDAN
             </div>
-            <p style={{ fontSize: 12, color: isPressure ? '#1c1004' : '#1e293b', lineHeight: 1.6, margin: 0, fontStyle: 'italic', fontWeight: isPressure ? 500 : 400 }}>
+            <p style={{ fontSize: 15, color: isPressure ? '#1c1004' : '#1e293b', lineHeight: 1.6, margin: 0, fontStyle: 'italic', fontWeight: isPressure ? 500 : 400 }}>
               "{alexMsg}"
             </p>
           </div>
@@ -594,11 +716,11 @@ export default function StoryReview({ story, onDecision, onViewReport, bribeHand
     {showVerify && (
       <VerifyModal
         story={story}
-        onDecision={(d) => { setShowVerify(false); onDecision(d); }}
+        onDecision={() => setShowVerify(false)}
         onClose={() => setShowVerify(false)}
       />
     )}
-    {story.storyType === 'call' && showMessage && !bribeHandled && <MessageScreen story={story} onDecision={onDecision} />}
+    {story.storyType === 'call' && showMessage && !bribeHandled && <MessageScreen story={story} onDecision={(d) => { setShowMessage(false); onDecision(d); }} />}
     </>
   );
 }

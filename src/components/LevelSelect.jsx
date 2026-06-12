@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom';
 import bgImage from '../images/background.jpg';
-import level1Img from '../images/level1.png';
-import level2Img from '../images/level2.png';
-import level3Img from '../images/level3.png';
+import level1Img from '../images/levels_n.png';
+import level2Img from '../images/levels_nn.png';
+import level3Img from '../images/levels_nnn.png';
 
 const LEVEL_IMAGES = { 1: level1Img, 2: level2Img, 3: level3Img };
 
@@ -42,27 +42,26 @@ export default function LevelSelect({ levels = [], onSelectLevel, onBack }) {
     <div style={{
       position: 'fixed',
       inset: 0,
-      display: 'flex',
       zIndex: 9999,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      backgroundImage: `url(${bgImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
     }}>
-      {/* Center — background image with overlay, scrollable */}
+      {/* White overlay */}
       <div style={{
-        flex: 1,
+        position: 'absolute',
+        inset: 0,
+        background: 'rgba(255,255,255,0.88)',
+        pointerEvents: 'none',
+      }} />
+      {/* Scrollable content layer */}
+      <div style={{
         position: 'relative',
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        zIndex: 1,
+        height: '100%',
         overflowY: 'auto',
       }}>
-        {/* Overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(225,235,245,0.82)',
-          pointerEvents: 'none',
-        }} />
-
         {/* Content */}
         <div style={{
           position: 'relative',
@@ -75,21 +74,23 @@ export default function LevelSelect({ levels = [], onSelectLevel, onBack }) {
           {/* Header */}
           <div style={{ marginBottom: 28 }}>
             <div style={{
-              fontSize: 26,
+              fontSize: 'clamp(1.6rem, 3.5vw, 2.2rem)',
               fontWeight: 900,
               color: '#0f172a',
-              letterSpacing: '0.01em',
+              letterSpacing: '-0.02em',
               lineHeight: 1,
-              marginBottom: 6,
+              marginBottom: 8,
             }}>
               LEVEL SELECT
             </div>
             <div style={{
-              fontSize: 14,
-              color: '#2563eb',
-              fontWeight: 500,
+              fontSize: 'clamp(0.85rem, 2vw, 1rem)',
+              color: '#dc2626',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
             }}>
-              Choose your mission.
+              Begin your mission.
             </div>
           </div>
 
@@ -185,19 +186,12 @@ export default function LevelSelect({ levels = [], onSelectLevel, onBack }) {
                         fontSize: 22,
                         fontWeight: 900,
                         color: '#ffffff',
-                        letterSpacing: '0.02em',
+                        letterSpacing: '-0.02em',
                         lineHeight: 1.05,
                         marginBottom: 6,
                         textTransform: 'uppercase',
                       }}>
                         {level.title}
-                      </div>
-                      <div style={{
-                        fontSize: 12,
-                        color: 'rgba(255,255,255,0.78)',
-                        lineHeight: 1.4,
-                      }}>
-                        {level.subtitle}
                       </div>
                     </div>
 
@@ -239,8 +233,8 @@ export default function LevelSelect({ levels = [], onSelectLevel, onBack }) {
             textAlign: 'center',
             marginTop: 20,
             fontSize: 13,
-            color: '#2563eb',
-            fontWeight: 500,
+            color: '#dc2626',
+            fontWeight: 600,
           }}>
             Complete previous level to unlock
           </div>

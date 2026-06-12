@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 
 const CONFETTI = [
   { color: '#fbbf24', x: 10, delay: 0,    size: 8,  rot: 15 },
@@ -58,16 +57,18 @@ function ShieldIcon() {
   );
 }
 
-export default function TrustAchievementModal({ onClose }) {
-  const overlayRef = useRef(null);
+import { useEffect } from 'react';
+import badgeSfx from '../audio/badge.mp3';
 
+export default function TrustAchievementModal({ onClose }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 6000);
+    new Audio(badgeSfx).play().catch(() => {});
+    const t = setTimeout(onClose, 5000);
     return () => clearTimeout(t);
   }, [onClose]);
 
   return (
-    <div className="trust-overlay" ref={overlayRef} onClick={onClose}>
+    <div className="trust-overlay">
       {/* Confetti */}
       {CONFETTI.map((c, i) => (
         <div
@@ -84,7 +85,7 @@ export default function TrustAchievementModal({ onClose }) {
         />
       ))}
 
-      <div className="trust-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="trust-modal">
         {/* Inner confetti (closer, smaller) */}
         {CONFETTI.slice(0, 8).map((c, i) => (
           <div
@@ -111,9 +112,6 @@ export default function TrustAchievementModal({ onClose }) {
           The Signal is now the most trusted<br />news source in the region.
         </div>
 
-        <button className="trust-modal__close" onClick={onClose}>
-          Continue
-        </button>
       </div>
     </div>
   );

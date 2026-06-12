@@ -6,9 +6,19 @@
   inset: 0;
   background-size: cover;
   background-position: center;
+  background-color: #0d2030;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: auto;
 }
+
+.splash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  pointer-events: none;
+}
+
 
 .splash__content {
   display: flex;
@@ -17,6 +27,7 @@
   text-align: center;
   gap: 0;
   padding: 48px 40px;
+  margin-top: 100px;
 }
 
 .splash__title {
@@ -35,6 +46,43 @@
   color: #cc0000;
   text-transform: uppercase;
   margin-top: 6px;
+  line-height: 1.6;
+}
+
+.word--breaking {
+  color: #cc0000;
+}
+
+.word--truth {
+  color: #0a1e28;
+  background: #fff;
+  padding: 0 4px;
+}
+
+.word--trust {
+  color: #fff;
+  background: #cc0000;
+  padding: 0 4px;
+  animation: trust-pulse 2s ease-in-out infinite;
+}
+
+.word--pressure {
+  color: #555;
+  font-size: 0.8em;
+  letter-spacing: 0.2em;
+  animation: pressure-fade 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+
+@keyframes trust-pulse {
+  0%, 100% { background: #cc0000; }
+  50% { background: #900; }
+}
+
+@keyframes pressure-fade {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .splash__description {
@@ -76,9 +124,9 @@
 }
 
 .splash__btn--primary {
-  background: #cc0000;
+  background: #0a1e28;
   color: #fff;
-  border-color: #cc0000;
+  border-color: #0a1e28;
 }
 
 .splash__btn--secondary {

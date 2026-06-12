@@ -36,7 +36,6 @@ export default function HowToPlay({ onClose }) {
     <div className="htp-overlay">
       <div className="htp-card">
         <h2 className="htp-title">HOW TO PLAY</h2>
-        <div className="htp-divider" />
 
         <div className="htp-steps">
           {STEPS.map((s, i) => (
