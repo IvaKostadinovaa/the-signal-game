@@ -127,4 +127,19 @@
   .htp-steps {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .htp-card {
+    padding: 24px 16px 20px;
+    border-radius: 14px;
+  }
+
+  .htp-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .htp-icon-img {
+    width: 80px;
+    height: 80px;
+  }
 }

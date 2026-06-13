@@ -397,25 +397,6 @@ export default function App() {
           if (clockAudioRef.current) clockAudioRef.current.muted = next;
         }}
       />
-      {deltaParticles.length > 0 && (
-        <div className="metric-particles-layer">
-          {deltaParticles.map(p => (
-            <div
-              key={p.id}
-              className={`metric-particle metric-particle--${p.metric}${p.neg ? ' metric-particle--down' : ''}`}
-              style={{
-                left: p.metric === 'trust'
-                  ? 'calc(105px + (100vw - 105px) / 6)'
-                  : p.metric === 'speed'
-                  ? 'calc(105px + (100vw - 105px) / 2)'
-                  : 'calc(105px + (100vw - 105px) * 5 / 6)',
-              }}
-            >
-              {p.neg ? '' : '+'}{p.delta} {p.metric.toUpperCase()}
-            </div>
-          ))}
-        </div>
-      )}
       <div className="app-body">
         <div className="app-content" style={{ marginLeft: 0, width: '100%' }}>
           {(state.view === 'storyReview' || state.view === 'consequence') && selectedStory && (

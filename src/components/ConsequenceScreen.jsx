@@ -217,6 +217,8 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
                     border: `1.5px solid ${cfg.border}`,
                     borderRadius: 10,
                     padding: '12px 14px',
+                    position: 'relative',
+                    overflow: 'visible',
                   }}>
                     <div style={{
                       fontSize: 9,
@@ -239,6 +241,22 @@ export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
                       </span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: deltaColor, opacity: 0.65 }}>%</span>
                     </div>
+                    <span style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '30%',
+                      fontSize: 26,
+                      fontWeight: 900,
+                      color: deltaColor,
+                      pointerEvents: 'none',
+                      animation: 'consequenceFloatUp 1.8s ease-out forwards',
+                      animationDelay: '0.2s',
+                      whiteSpace: 'nowrap',
+                      zIndex: 10,
+                      textShadow: `0 2px 12px ${deltaColor}88`,
+                    }}>
+                      {isPos ? `+${delta}` : delta}%
+                    </span>
                   </div>
                 );
               })}
