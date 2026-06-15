@@ -9,7 +9,7 @@
 //       <div className="team-content">
 //         <h2 className="team-heading">Meet Your Newsroom</h2>
 //         <p className="team-subheading">
-//           Each voice carries an agenda. Learn who to trust — and when.
+//           Each voice carries an agenda. Learn who to trust - and when.
 //         </p>
 //         <hr className="roadmap-rule" />
 
@@ -52,7 +52,7 @@ export default function TeamScreen({ onPlay }) {
       <div className="team-content">
         <h2 className="team-heading">Meet Your Newsroom</h2>
         <p className="team-subheading">
-          Each voice carries an agenda. Learn who to trust — and when.
+          Each voice carries an agenda. Learn who to trust - and when.
         </p>
 
         <div className="team-grid">

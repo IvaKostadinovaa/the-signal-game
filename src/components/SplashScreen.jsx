@@ -13,7 +13,7 @@ const TICKER_ITEMS = [
 
 export default function SplashScreen({ onPlay, onContinue, onHowToPlay }) {
   return (
-    <main className="splash" style={{ backgroundImage: `url(${bgImage})` }}>
+    <main className="splash" style={{ '--splash-bg': `url(${bgImage})` }}>
       <div className="news-ticker">
         <span className="news-ticker__label">LIVE</span>
         <div className="news-ticker__track">

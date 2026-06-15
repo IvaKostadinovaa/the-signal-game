@@ -14,11 +14,16 @@ export default function VERAReportModal({ story, onClose }) {
           <>
             <p className="modal__vera-detail">
               Confidence Score: <strong>{vera.confidence}%</strong> ·{' '}
-              {vera.confidenceType === 'low' ? 'Low Confidence' : vera.confidenceType === 'medium' ? 'Medium Confidence' : 'High Confidence'}
+              {vera.confidenceType === 'high' ? 'High Confidence' : vera.confidenceType === 'medium' ? 'Medium Confidence' : vera.confidenceType === 'low-medium' ? 'Low-Medium Confidence' : 'Low Confidence'}
             </p>
             <div className="modal__vera-flags">
-              {vera.redFlags.map((flag, i) => (
-                <p key={i} className="modal__vera-detail">• {flag}</p>
+              {(vera.indicators
+                ? vera.indicators
+                : vera.redFlags.map(f => ({ type: 'flag', text: f }))
+              ).map((indicator, i) => (
+                <p key={i} className="modal__vera-detail" style={{ color: indicator.type === 'confirmed' ? '#22c55e' : indicator.type === 'warning' ? '#f59e0b' : indicator.type === 'fail' ? '#ef4444' : undefined }}>
+                  {indicator.type === 'confirmed' ? '✓' : indicator.type === 'warning' ? '⚠' : indicator.type === 'fail' ? '✗' : '•'} {indicator.bold ? <strong>{indicator.text}</strong> : indicator.text}
+                </p>
               ))}
             </div>
             {vera.quote && <blockquote className="modal__vera-quote">"{vera.quote}"</blockquote>}

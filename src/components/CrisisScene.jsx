@@ -6,7 +6,7 @@ export default function CrisisScene({ dispatch, meters }) {
         <span className="crisis-scene__countdown">15:00</span>
       </div>
       <div className="crisis-scene__hero">
-        <h2>Mass Casualty Event — Three Conflicting Accounts — City in Panic</h2>
+        <h2>Mass Casualty Event - Three Conflicting Accounts - City in Panic</h2>
         <p>Real-time pressure. Choose your action before the next update.</p>
       </div>
       <div className="crisis-scene__actions">

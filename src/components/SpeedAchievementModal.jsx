@@ -54,6 +54,7 @@ function LightningIcon() {
 }
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import badgeSfx from '../audio/badge.mp3';
 
 export default function SpeedAchievementModal({ onClose }) {
@@ -61,9 +62,10 @@ export default function SpeedAchievementModal({ onClose }) {
     new Audio(badgeSfx).play().catch(() => {});
     const t = setTimeout(onClose, 2000);
     return () => clearTimeout(t);
-  }, [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  return (
+  return createPortal(
     <div className="speed-overlay">
       {CONFETTI.map((c, i) => (
         <div
@@ -108,6 +110,7 @@ export default function SpeedAchievementModal({ onClose }) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

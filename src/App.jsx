@@ -12,6 +12,9 @@ import EndingScreen from './components/EndingScreen.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import HowToPlay from './components/HowToPlay.jsx';
 import TimeoutModal from './components/TimeoutModal.jsx';
+import TrustAchievementModal from './components/TrustAchievementModal.jsx';
+import SpeedAchievementModal from './components/SpeedAchievementModal.jsx';
+import VerifiedAchievementModal from './components/VerifiedAchievementModal.jsx';
 import './styles/game.css';
 
 const GAME_TICKER_ITEMS = [
@@ -45,11 +48,8 @@ function NewsFirstTicker({ newsfirst, headline }) {
         )}
         <span className="newsfirst-ticker__badge" style={{ background: cfg.badgeBg, color: cfg.badgeText }}>
           {cfg.label}
-          {newsfirst.status === 'named-silent' && newsfirst.shares && <> · {newsfirst.shares.toLocaleString()} shares</>}
+          {newsfirst.shares && <> · {newsfirst.shares.toLocaleString()} shares</>}
         </span>
-        {(newsfirst.status === 'same-story' || newsfirst.status === 'different-angle') && newsfirst.shares && (
-          <span className="newsfirst-ticker__shares" style={{ color: cfg.text }}>{newsfirst.shares.toLocaleString()} shares</span>
-        )}
         {newsfirst.speedPenalty && (
           <span className="newsfirst-ticker__penalty">Speed {newsfirst.speedPenalty}</span>
         )}
@@ -71,8 +71,10 @@ const initialState = {
   showCharacters: false,
   postBribeReturnToStory: false,
   bribeAccepted: false,
+  lawsuitEnding: false,
   bribeHandled: false,
   correctDecisions: 0,
+  verifyCount: 0,
   meters: { trust: 0, speed: 0, legalRisk: 0, audienceReach: 0 },
   xp: 0,
 };
@@ -98,7 +100,7 @@ function reducer(state, action) {
     case 'MAKE_DECISION': {
       const story = ALL_STORIES.find((s) => s.id === state.selectedStoryId);
       if (!story) return state;
-      const isCallPhase = !state.bribeHandled && !!story.callConsequences;
+      const isCallPhase = !action.skipCallPhase && !state.bribeHandled && !!story.callConsequences;
       const d = (isCallPhase ? story.callDeltas : story.deltas)?.[action.decision] || {};
       const outcome = (isCallPhase ? story.callConsequences : story.consequences)?.[action.decision] || null;
       const isCorrect = !!outcome?.correct;
@@ -110,34 +112,43 @@ function reducer(state, action) {
       const speedDelta = action.timed ? -20 : Math.round(timeRatio * 20) + verifyPenalty;
 
       // Correct decisions always give +trust (min +5) and never increase legalRisk
-      const trustDelta = isCorrect ? Math.max(d.trust || 0, 5) : (d.trust || 0);
-      const legalDelta = isCorrect ? Math.min(d.legalRisk || 0, 0) : Math.max(d.legalRisk || 0, 5);
+      const trustDelta = isCorrect ? Math.max(d.trust || 0, 15) : (d.trust || 0);
+      const rawLegalDelta = isCorrect ? 0 : Math.max(d.legalRisk || 0, 5);
+      const legalDelta = state.currentLevel === 1 ? 0 : rawLegalDelta;
 
       const isBribeDecline = isCallPhase && action.decision === 'drop';
       const isBribeAccept  = isCallPhase && action.decision !== 'drop';
+      // Bribe accepted → legal risk spikes to 100 immediately, show real delta
+      const finalLegalRisk = isBribeAccept ? 100 : clamp(state.meters.legalRisk + legalDelta);
+      const displayLegalDelta = isBribeAccept ? (100 - state.meters.legalRisk) : legalDelta;
       return {
         ...state,
         view: 'consequence',
         showVERAReport: false,
         lastOutcome: outcome,
-        lastDeltas: { ...d, trust: trustDelta, legalRisk: legalDelta, speed: speedDelta },
+        lastDeltas: { ...d, trust: trustDelta, legalRisk: displayLegalDelta, speed: speedDelta },
         actionId: state.actionId + 1,
         postBribeReturnToStory: isBribeDecline,
         bribeAccepted: isBribeAccept,
+        bribeHandled: state.bribeHandled || action.skipCallPhase || false,
         xp: state.xp + (isCorrect ? 80 : 20),
         correctDecisions: state.correctDecisions + (isCorrect ? 1 : 0),
+        verifyCount: state.verifyCount + (!isCallPhase && (action.decision === 'verify' || action.verified) ? 1 : 0),
         meters: {
           trust: clamp(state.meters.trust + trustDelta),
           speed: clamp(state.meters.speed + speedDelta),
-          legalRisk: clamp(state.meters.legalRisk + legalDelta),
+          legalRisk: finalLegalRisk,
           audienceReach: clamp(state.meters.audienceReach + (d.audienceReach || 0)),
         },
       };
     }
 
+    case 'STORY_VERIFIED':
+      return { ...state };
+
     case 'NEXT': {
       if (state.bribeAccepted) {
-        return { ...state, view: 'ending', bribeAccepted: false };
+        return { ...state, view: 'ending', bribeAccepted: false, lawsuitEnding: true };
       }
       if (state.postBribeReturnToStory) {
         return {
@@ -227,8 +238,15 @@ export default function App() {
   const [timedOut, setTimedOut] = useState(false);
   const [earnedTrustBadge, setEarnedTrustBadge] = useState(false);
   const [earnedSpeedBadge, setEarnedSpeedBadge] = useState(false);
+  const [earnedVerifiedBadge, setEarnedVerifiedBadge] = useState(false);
+  const [showTrustModal, setShowTrustModal] = useState(false);
+  const [showSpeedModal, setShowSpeedModal] = useState(false);
+  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
+  const pendingBadgesRef = useRef([]);
+  const postConsequencePending = useRef(false);
   const trustAchievementShown = useRef(false);
   const speedAchievementShown = useRef(false);
+  const verifiedAchievementShown = useRef(false);
   const clockAudioRef = useRef(null);
   const [deltaParticles, setDeltaParticles] = useState([]);
   const [metricFlash, setMetricFlash] = useState({});
@@ -270,18 +288,25 @@ export default function App() {
   }, [state.view, state.selectedStoryId]);
 
   useEffect(() => {
-    if (state.meters.trust > 60 && !trustAchievementShown.current) {
+    if (state.meters.trust > 70 && !trustAchievementShown.current) {
       trustAchievementShown.current = true;
-      setEarnedTrustBadge(true);
+      pendingBadgesRef.current.push('trust');
     }
   }, [state.meters.trust]);
 
   useEffect(() => {
-    if (state.meters.speed > 60 && state.meters.trust > 60 && !speedAchievementShown.current) {
+    if (state.meters.speed > 70 && state.meters.trust > 70 && !speedAchievementShown.current) {
       speedAchievementShown.current = true;
-      setEarnedSpeedBadge(true);
+      pendingBadgesRef.current.push('speed');
     }
   }, [state.meters.speed, state.meters.trust]);
+
+  useEffect(() => {
+    if (state.verifyCount >= 2 && !verifiedAchievementShown.current) {
+      verifiedAchievementShown.current = true;
+      pendingBadgesRef.current.push('verified');
+    }
+  }, [state.verifyCount]);
 
   useEffect(() => {
     setDeltaParticles([]);
@@ -321,10 +346,30 @@ export default function App() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [state.actionId]);
 
+  function drainBadgesOrNext() {
+    const badge = pendingBadgesRef.current.shift();
+    if (!badge) {
+      postConsequencePending.current = false;
+      dispatch({ type: 'NEXT' });
+      return;
+    }
+    if (badge === 'trust') {
+      setShowTrustModal(true);
+      setTimeout(() => setEarnedTrustBadge(true), 1000);
+    } else if (badge === 'speed') {
+      setShowSpeedModal(true);
+      setTimeout(() => setEarnedSpeedBadge(true), 1000);
+    } else if (badge === 'verified') {
+      setShowVerifiedModal(true);
+      setTimeout(() => setEarnedVerifiedBadge(true), 1000);
+    }
+  }
+
   const levelsWithStatus = LEVELS.map((l) => ({
     ...l,
     status: state.levelProgress[l.id] || 'locked',
   }));
+
 
   if (state.view === 'splash') {
     return (
@@ -344,14 +389,23 @@ export default function App() {
       <EndingScreen
         meters={state.meters}
         xp={state.xp}
+        lawsuitEnding={state.lawsuitEnding}
         onRestart={() => {
           dispatch({ type: 'RESTART' });
           trustAchievementShown.current = false;
           speedAchievementShown.current = false;
+          verifiedAchievementShown.current = false;
           setEarnedTrustBadge(false);
           setEarnedSpeedBadge(false);
+          setEarnedVerifiedBadge(false);
+          setShowTrustModal(false);
+          setShowSpeedModal(false);
+          setShowVerifiedModal(false);
+          postConsequencePending.current = false;
+          pendingBadgesRef.current = [];
         }}
-        earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge }}
+        onMainMenu={() => dispatch({ type: 'NAVIGATE', view: 'splash' })}
+        earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge, verified: earnedVerifiedBadge }}
       />
     );
   }
@@ -390,6 +444,7 @@ export default function App() {
         timeLeft={timeLeft}
         isMuted={isMuted}
         metricFlash={metricFlash}
+        currentLevel={state.currentLevel}
         onToggleMute={() => {
           const next = !isMuted;
           isMutedRef.current = next;
@@ -402,11 +457,12 @@ export default function App() {
           {(state.view === 'storyReview' || state.view === 'consequence') && selectedStory && (
             <StoryReview
               story={selectedStory}
-              onDecision={(decision) => dispatch({ type: 'MAKE_DECISION', decision, timeLeft, initialTime: selectedStory.initialTime })}
+              onDecision={(decision, verified, skipCallPhase) => dispatch({ type: 'MAKE_DECISION', decision, verified, skipCallPhase, timeLeft, initialTime: selectedStory.initialTime })}
+              onVerified={() => dispatch({ type: 'STORY_VERIFIED' })}
               onViewReport={() => dispatch({ type: 'SHOW_VERA_REPORT' })}
               bribeHandled={state.bribeHandled}
               correctDecisions={state.correctDecisions}
-              earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge }}
+              earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge, verified: earnedVerifiedBadge }}
             />
           )}
           {state.view === 'consequence' && (
@@ -414,7 +470,14 @@ export default function App() {
               outcome={state.lastOutcome}
               meters={state.meters}
               deltas={state.lastDeltas}
-              onNext={() => dispatch({ type: 'NEXT' })}
+              onNext={() => {
+                if (pendingBadgesRef.current.length > 0) {
+                  postConsequencePending.current = true;
+                  drainBadgesOrNext();
+                } else {
+                  dispatch({ type: 'NEXT' });
+                }
+              }}
             />
           )}
         </div>
@@ -458,6 +521,11 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {showTrustModal && <TrustAchievementModal onClose={() => { setShowTrustModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+      {showSpeedModal && <SpeedAchievementModal onClose={() => { setShowSpeedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+      {showVerifiedModal && <VerifiedAchievementModal onClose={() => { setShowVerifiedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+
     </div>
   );
 }

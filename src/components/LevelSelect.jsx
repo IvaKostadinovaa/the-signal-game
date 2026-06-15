@@ -46,7 +46,7 @@ export default function LevelSelect({ levels = [], onSelectLevel, onBack }) {
       fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       backgroundImage: `url(${bgImage})`,
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: 'center 85%',
     }}>
       {/* White overlay */}
       <div style={{

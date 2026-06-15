@@ -4,7 +4,7 @@ const STEPS = [
   {
     label: 'Observation',
     placeholder: 'State what you observed without evaluation…',
-    hint: 'Describe facts only — no judgement.',
+    hint: 'Describe facts only - no judgement.',
   },
   {
     label: 'Feeling',

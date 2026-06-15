@@ -4,9 +4,9 @@ import chartCorrectImg from '../images/1_1_1.png';
 import mediopolWatchImg from '../images/1_1_3.png';
 import transcriptImg from '../images/tools1.1_2.png';
 import audioClipImg from '../images/tool_1_1.png';
-import transcriptFullImg from '../images/tool1.png';
+import transcriptFullImg from '../images/story_1.png';
 import clipComparatorImg from '../images/tool1_2.png';
-import clipComparatorOrigImg from '../images/tools2.1_3.png';
+import clipComparatorOrigImg from '../images/story_2.png';
 import reverseImageSearchImg from '../images/tools_2.1_1.png';
 import electionArticleImg from '../images/tools2.3_1.png';
 import electionStatementImg from '../images/tools2.3_2.png';
@@ -264,7 +264,7 @@ function EvidenceChainBody() {
         ))}
       </div>
       <div style={{ marginTop: 14, fontSize: 11.5, color: '#475569', lineHeight: 1.5 }}>
-        Evidence gap: <span style={{ fontWeight: 800, color: '#dc2626' }}>HIGH</span> — chain relies entirely on secondary reporting.
+        Evidence gap: <span style={{ fontWeight: 800, color: '#dc2626' }}>HIGH</span> - chain relies entirely on secondary reporting.
       </div>
     </div>
   );
@@ -344,16 +344,16 @@ const VERIFY_CARDS = {
     cards: [
       { title: 'Does this number tell the whole story?', subtitle: 'Numbers can be misleading without context.', Body: () => <div><img src={audioClipImg} alt="Misleading chart" style={{ width: '100%', borderRadius: 8, display: 'block', marginBottom: 10 }}/><p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>The chart starts at 383, not 0. The real increase is only 4.4%.</p></div> },
       { title: 'Compared to what?', subtitle: 'Check the baseline and comparison period.', Body: () => <div><img src={clipComparatorImg} alt="Compared chart" style={{ width: '100%', borderRadius: 8, display: 'block', marginBottom: 10 }}/><p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>Official police data shows a stable trend over the same period.</p></div> },
-      { title: 'Who wants me to believe this?', subtitle: 'Check the source and their track record.', Body: () => <div><img src={transcriptFullImg} alt="Source credibility" style={{ width: '100%', borderRadius: 8, display: 'block', marginBottom: 10 }}/><p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>@MediopolWatch created 3 days ago. No history, no sources.</p></div> },
+      { title: 'Who wants me to believe this?', subtitle: 'Check the source and their track record.', Body: () => <div><img src={transcriptFullImg} alt="Source credibility" style={{ width: '100%', borderRadius: 8, display: 'block', marginBottom: 10 }}/><p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>@MediopolWatch active for 3 years. 14 reports published.</p></div> },
     ],
-    lesson: 'Always ask for context, compare sources, and check who benefits from the story.',
+    lesson: 'A chart can show real data and still mislead. Always check where the Y-axis starts - a baseline above zero makes small changes look dramatic.',
   },
   'transcript-audio': {
     level: 'LEVEL 1', category: 'AUDIO', accentColor: '#0891b2',
     cards: [
-      { title: 'Where does the clip cut off?', subtitle: 'Look at what the clip shows — and what it hides.', Body: AudioWaveformBody },
+      { title: 'Where does the clip cut off?', subtitle: 'Look at what the clip shows - and what it hides.', Body: AudioWaveformBody },
       { title: 'What does the full transcript say?', subtitle: 'Always check the complete original source.', Body: TranscriptBody },
-      { title: 'How does the context change the meaning?', subtitle: 'Clip vs. full statement — compare directly.', Body: ClipComparatorBody },
+      { title: 'How does the context change the meaning?', subtitle: 'Clip vs. full statement - compare directly.', Body: ClipComparatorBody },
     ],
     lesson: 'A quote can be technically accurate and completely misleading. Always read the sentence after the one everyone is sharing.',
   },
@@ -375,7 +375,7 @@ const VERIFY_CARDS = {
       { title: 'What does the accused side say?', subtitle: 'Both sides of a story must be verified.', Body: ElectionStatementBody },
       { title: 'What is the evidence chain?', subtitle: 'Trace every claim back to a primary source.', Body: EvidenceChainBody },
     ],
-    lesson: '"Exclusive documents" with no documents is not a story — it is an allegation. Extraordinary claims require extraordinary evidence.',
+    lesson: '"Exclusive documents" with no documents is not a story - it is an allegation. Extraordinary claims require extraordinary evidence.',
   },
   'deepfake': {
     level: 'LEVEL 3', category: 'VIDEO', accentColor: '#dc2626',
@@ -384,7 +384,7 @@ const VERIFY_CARDS = {
       { title: 'Why is this appearing now?', subtitle: 'Timing and motive reveal intent behind the video.', Body: DeepfakeHeatmapBody },
       { title: 'What reaction is this trying to trigger?', subtitle: 'Emotional manipulation is a key disinformation tool.', Body: DeepfakeEmotionBody },
     ],
-    lesson: 'Near-perfect AI synthesis fools the human eye. Forensic tools are the last line of defense before publication. The most important story was not the video — it was who made it.',
+    lesson: 'Near-perfect AI synthesis fools the human eye. Forensic tools are the last line of defense before publication. The most important story was not the video - it was who made it.',
   },
 };
 
@@ -434,7 +434,7 @@ export default function VerifyModal({ story, onDecision, onClose }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px',
     }}>
-      <div style={{
+      <div className="verify-modal-box" style={{
         background: '#f8fafc',
         borderRadius: 18,
         width: '100%', maxWidth: 920,
@@ -446,7 +446,7 @@ export default function VerifyModal({ story, onDecision, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src={verificationLogoImg} alt="Verification" style={{ height: 32, width: 'auto', display: 'block' }}/>
             <div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#cc0000', letterSpacing: '0.1em', marginBottom: 2 }}>{level} — {category}</div>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#cc0000', letterSpacing: '0.1em', marginBottom: 2 }}>{level} - {category}</div>
               <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', letterSpacing: '0.06em' }}>VERIFY TOOLS</div>
             </div>
           </div>
@@ -456,7 +456,7 @@ export default function VerifyModal({ story, onDecision, onClose }) {
         </div>
 
         {/* 3 cards */}
-        <div style={{ display: 'flex', gap: 14, padding: '16px 16px 0' }}>
+        <div className="verify-cards-row" style={{ display: 'flex', gap: 14, padding: '16px 16px 0' }}>
           {cards.map((card, i) => (
             <VerifyCard key={i} num={i + 1} title={card.title} subtitle={card.subtitle} Body={card.Body} accentColor={accentColor} />
           ))}
@@ -474,7 +474,7 @@ export default function VerifyModal({ story, onDecision, onClose }) {
 
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 20px 16px', background: '#fff', borderTop: '1px solid #e2e8f0' }}>
-          <button type="button" onClick={() => onDecision('verify')}
+          <button type="button" onClick={onClose}
             style={{ background: '#0a1e28', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', cursor: 'pointer' }}
             onMouseOver={e => e.currentTarget.style.opacity = '0.88'}
             onMouseOut={e => e.currentTarget.style.opacity = '1'}

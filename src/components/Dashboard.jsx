@@ -104,7 +104,7 @@ export default function Dashboard({ stories, decisions, onSelectStory, onCrisis 
         <div className="tip-box">
           <span className="tip-box__icon">⚠️</span>
           <span>
-            <strong>NEVER FULL CERTAINTY</strong> — You will never know if you are right until after you decide.
+            <strong>NEVER FULL CERTAINTY</strong> - You will never know if you are right until after you decide.
             VERA can be wrong. Sources can lie. Speed kills accuracy. That is the lesson.
           </span>
         </div>
@@ -129,7 +129,7 @@ export default function Dashboard({ stories, decisions, onSelectStory, onCrisis 
           </div>
           <p className="vera-panel__text">
             {decidedCount < stories.length
-              ? `${stories.length - decidedCount} stor${stories.length - decidedCount === 1 ? 'y' : 'ies'} pending. Anomalies detected in incoming materials. VERA confidence is probabilistic — always verify independently.`
+              ? `${stories.length - decidedCount} stor${stories.length - decidedCount === 1 ? 'y' : 'ies'} pending. Anomalies detected in incoming materials. VERA confidence is probabilistic - always verify independently.`
               : 'All stories resolved. Crisis situation developing. Proceed to response.'}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
@@ -142,13 +142,13 @@ export default function Dashboard({ stories, decisions, onSelectStory, onCrisis 
         <div className="team-mood">
           <div className="team-mood__title">TEAM STATUS</div>
           <div className="team-mood__faces">
-            <div className="team-mood__face team-mood__face--active" title="Alex Jordan">😐</div>
+            <div className="team-mood__face team-mood__face--active" title="Alex">😐</div>
             <div className="team-mood__face" title="VERA">🤖</div>
             <div className="team-mood__face" title="Advertiser">📞</div>
             <div className="team-mood__face" title="Team">👥</div>
           </div>
           <div className="team-mood__status">Under Pressure</div>
-          <div className="team-mood__sub">Alex Jordan is pushing for speed</div>
+          <div className="team-mood__sub">Alex is pushing for speed</div>
         </div>
 
         <div style={{

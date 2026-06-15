@@ -4,9 +4,6 @@
   justify-content: center;
   position: fixed;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-color: #0d2030;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: auto;
 }
@@ -15,8 +12,16 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.15);
+  background-image: var(--splash-bg);
+  background-size: cover;
+  background-position: center 85%;
   pointer-events: none;
+  z-index: 0;
+}
+
+.splash > * {
+  position: relative;
+  z-index: 1;
 }
 
 
