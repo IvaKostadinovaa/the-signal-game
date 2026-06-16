@@ -297,10 +297,10 @@ export const stories = [
         correct: true,
       },
       verify: {
-        title: 'The Signal Waited — And Lost the Story',
-        subtitle: 'The evidence was already sufficient to publish. Waiting for an official press release cost The Signal the scoop while the story was accurate. NewsFirst got full credit.',
-        trueReveal: 'Three independent principals confirmed the cuts. The reporter had a seven-year impeccable track record. The council did not deny the decision. These conditions already met the publication threshold — waiting added no accuracy, only delay.',
-        correct: false,
+        title: 'The Signal Verified — Then Published Late',
+        subtitle: 'The evidence was already sufficient to publish without waiting. Verification confirmed what three independent principals had already established. The story was accurate — but NewsFirst published first.',
+        trueReveal: 'The corroboration was already sufficient before verification. Three independent principals, a seven-year track record, no denial from the council. Verification added no new information — only delay. The story was real, but the scoop was lost.',
+        correct: true,
       },
       drop: {
         title: 'The Signal Passed on a Verified Story',
@@ -725,9 +725,9 @@ export const stories = [
       recommendation: 'Verifying the event context before publication is strongly recommended.',
     },
     deltas: {
-      publish: { trust: -18, speed: 14, legalRisk: 20, audienceReach: -6 },
-      verify:  { trust: 26,  speed: -8, legalRisk: 0,  audienceReach: 7  },
-      drop:    { trust: -10, speed: -8, legalRisk: 0,  audienceReach: -4 },
+      publish: { trust: 18,  speed: 14, legalRisk: 0, audienceReach: 5   },
+      verify:  { trust: 26,  speed: -8, legalRisk: 0, audienceReach: 7   },
+      drop:    { trust: -10, speed: -8, legalRisk: 0, audienceReach: -4  },
     },
     interruptions: [
       {
@@ -750,10 +750,10 @@ export const stories = [
     },
     consequences: {
       publish: {
-        title: 'The Signal Amplified a Misleading Narrative',
-        subtitle: 'Conference records confirmed the event was an EU-mandated regulatory summit. The Signal had published a "corruption" story about mandatory attendance. A correction was required.',
-        trueReveal: 'The photo was real. The minister was there. But the full picture: an Annual Pharmaceutical Regulatory Conference, mandatory under EU guidelines, attended by ministers from four countries.',
-        correct: false,
+        title: 'The Signal Published the Corrected Story',
+        subtitle: 'Publishing the minister\'s attendance with full context — a mandatory EU regulatory summit attended by four health ministers — exposed the misleading framing. The political attack account lost credibility.',
+        trueReveal: 'The photo was real. The conference was mandatory under EU law, attended by four health ministers. Publishing with full context was the right editorial call.',
+        correct: true,
       },
       verify: {
         title: 'The Signal Published the Full Picture',
