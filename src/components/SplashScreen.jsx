@@ -11,7 +11,7 @@ const TICKER_ITEMS = [
   '● BREAKING NEWS',
 ];
 
-export default function SplashScreen({ onPlay, onContinue, onHowToPlay }) {
+export default function SplashScreen({ onPlay, onContinue, onHowToPlay, hasSave }) {
   return (
     <main className="splash" style={{ '--splash-bg': `url(${bgImage})` }}>
       <div className="news-ticker">
@@ -40,9 +40,11 @@ export default function SplashScreen({ onPlay, onContinue, onHowToPlay }) {
           <button className="splash__btn splash__btn--primary" onClick={onPlay}>
             NEW GAME
           </button>
-          <button className="splash__btn splash__btn--secondary" onClick={onContinue}>
-            CONTINUE
-          </button>
+          {hasSave && (
+            <button className="splash__btn splash__btn--secondary" onClick={onContinue}>
+              CONTINUE
+            </button>
+          )}
           <button className="splash__btn splash__btn--secondary" onClick={onHowToPlay}>
             HOW TO PLAY
           </button>

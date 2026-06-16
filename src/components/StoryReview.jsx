@@ -6,17 +6,21 @@ import VerifyModal from './VerifyModal.jsx';
 import alexImg from '../images/alex.png';
 import imgMessage        from '../images/message.png';
 import imgCrimeStats     from '../images/level1_1.png';
+import imgSchoolBudget   from '../images/story_2_image.png';
 import imgPoliticianQuote from '../images/level1_2.png';
 import imgMayorChen      from '../images/level2_1.png';
 import imgElectionDocs   from '../images/story_4.png';
 import imgLevel3News     from '../images/level3_news.png';
+import imgMinisterPhoto  from '../images/story_3_level2.png';
 
 const STORY_IMAGES = {
-  'crime-stats':      imgCrimeStats,
-  'politician-quote': imgPoliticianQuote,
-  'mayor-chen-image': imgMayorChen,
-  'election-docs':    imgElectionDocs,
-  deepfake:           imgLevel3News,
+  'crime-stats':        imgCrimeStats,
+  'school-budget-cut':  imgSchoolBudget,
+  'politician-quote':   imgPoliticianQuote,
+  'mayor-chen-image':   imgMayorChen,
+  'election-docs':      imgElectionDocs,
+  deepfake:             imgLevel3News,
+  'minister-photo':     imgMinisterPhoto,
 };
 
 const PlayIcon = () => (
@@ -187,7 +191,7 @@ const HURRY_MESSAGES = [
   'Last chance. Yes or no?',
 ];
 
-function MessageScreen({ story, onDecision }) {
+function MessageScreen({ story, onDecision, isMutedRef }) {
   const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const [hurryCount, setHurryCount] = useState(0);
   const [readCount, setReadCount] = useState(0);
@@ -196,6 +200,7 @@ function MessageScreen({ story, onDecision }) {
 
   useEffect(() => {
     const audio = new Audio(dealSfx);
+    audio.muted = isMutedRef?.current ?? false;
     audio.play().catch(() => {});
     audioRef.current = audio;
     setTimeout(() => { audio.pause(); }, 1000);
@@ -205,6 +210,7 @@ function MessageScreen({ story, onDecision }) {
       setHurryCount(1);
       setVibrateKey(k => k + 1);
       const a1 = new Audio(dealSfx);
+      a1.muted = isMutedRef?.current ?? false;
       a1.play().catch(() => {});
       setTimeout(() => a1.pause(), 1000);
     }, 5000);
@@ -214,6 +220,7 @@ function MessageScreen({ story, onDecision }) {
       setHurryCount(2);
       setVibrateKey(k => k + 1);
       const a2 = new Audio(dealSfx);
+      a2.muted = isMutedRef?.current ?? false;
       a2.play().catch(() => {});
       setTimeout(() => a2.pause(), 1000);
     }, 9000);
@@ -489,7 +496,7 @@ function MessageScreen({ story, onDecision }) {
   );
 }
 
-export default function StoryReview({ story, onDecision, onVerified, onViewReport, bribeHandled, correctDecisions, earnedBadges = {} }) {
+export default function StoryReview({ story, onDecision, onVerified, onViewReport, bribeHandled, correctDecisions, earnedBadges = {}, isMuted }) {
   const [playing, setPlaying] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
@@ -502,6 +509,8 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
   const [alexBubblePos, setAlexBubblePos] = useState(null);
   const alexCharRef = useRef(null);
   const callTimeoutRef = useRef(null);
+  const isMutedRef = useRef(isMuted);
+  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
   const storyImage = STORY_IMAGES[story.id];
 
   useEffect(() => {
@@ -539,7 +548,7 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
         setAlexBubblePos({ top: rect.top, left: rect.right + 14 });
       }
       setAlexVisible(true);
-      new Audio(notificationSfx).play().catch(() => {});
+      const n = new Audio(notificationSfx); n.muted = isMutedRef.current; n.play().catch(() => {});
     }, 2000);
     let id2, id3;
     if (story.alexFollowUpQuote) {
@@ -547,7 +556,7 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
         setAlexMsg2Visible(true);
         setAlexVisible(true);
         setAlexDismissed(false);
-        new Audio(notificationSfx).play().catch(() => {});
+        const n2 = new Audio(notificationSfx); n2.muted = isMutedRef.current; n2.play().catch(() => {});
       }, 10000);
     }
     if (story.alexFollowUpQuote2) {
@@ -555,7 +564,7 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
         setAlexMsg3Visible(true);
         setAlexVisible(true);
         setAlexDismissed(false);
-        new Audio(notificationSfx).play().catch(() => {});
+        const n3 = new Audio(notificationSfx); n3.muted = isMutedRef.current; n3.play().catch(() => {});
       }, 18000);
     }
     return () => { clearTimeout(id); clearTimeout(id2); clearTimeout(id3); };
@@ -688,14 +697,14 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
                 </div>
               </div>
             ) : storyImage ? (
-              <div style={{ borderRadius: 10, overflow: 'hidden', height: story.id === 'election-docs' ? 385 : 197 }}>
+              <div style={{ borderRadius: 10, overflow: 'hidden', height: story.id === 'election-docs' ? 385 : story.id === 'mayor-chen-image' ? 'auto' : 197, margin: undefined, clipPath: story.id === 'mayor-chen-image' ? 'inset(1px 0 2px 2px)' : undefined }}>
                 <img
                   src={storyImage}
                   alt={story.title}
                   style={{
                     width: '100%',
-                    height: '100%',
-                    objectFit: story.id === 'election-docs' ? 'contain' : 'cover',
+                    height: story.id === 'mayor-chen-image' ? 'auto' : '100%',
+                    objectFit: (story.id === 'election-docs' || story.id === 'mayor-chen-image') ? 'contain' : 'cover',
                     display: 'block',
                   }}
                 />
@@ -755,9 +764,7 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
           </button>
           {!hasVerified && (
             <button className="decision-btn decision-btn--verify" onClick={() => {
-              const skipCall = story.storyType === 'call' && !bribeHandled && !showMessage;
-              if (skipCall) { clearTimeout(callTimeoutRef.current); onDecision('verify', false, skipCall); }
-              else story.verifyType ? setShowVerify(true) : onDecision('verify');
+              story.verifyType ? setShowVerify(true) : onDecision('verify');
             }}>
               <span className="decision-btn__icon"><VerifyIcon /></span>
               <span className="decision-btn__text">
@@ -970,7 +977,7 @@ export default function StoryReview({ story, onDecision, onVerified, onViewRepor
         onClose={() => { setShowVerify(false); setHasVerified(true); if (onVerified) onVerified(); }}
       />
     )}
-    {story.storyType === 'call' && showMessage && !bribeHandled && <MessageScreen story={story} onDecision={(d) => { setShowMessage(false); onDecision(d); }} />}
+    {story.storyType === 'call' && showMessage && !bribeHandled && <MessageScreen story={story} onDecision={(d) => { setShowMessage(false); onDecision(d); }} isMutedRef={isMutedRef} />}
     </>
   );
 }

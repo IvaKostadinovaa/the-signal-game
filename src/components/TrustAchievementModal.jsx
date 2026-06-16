@@ -61,9 +61,11 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import badgeSfx from '../audio/badge.mp3';
 
-export default function TrustAchievementModal({ onClose }) {
+export default function TrustAchievementModal({ onClose, isMuted }) {
   useEffect(() => {
-    new Audio(badgeSfx).play().catch(() => {});
+    const audio = new Audio(badgeSfx);
+    audio.muted = !!isMuted;
+    audio.play().catch(() => {});
     const t = setTimeout(onClose, 5000);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps

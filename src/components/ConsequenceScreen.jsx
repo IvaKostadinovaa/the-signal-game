@@ -38,16 +38,18 @@ const METRIC_CONFIG = {
   audienceReach: { label: 'AUDIENCE',   color: '#2563eb', border: '#bfdbfe', bg: '#eff6ff' },
 };
 
-export default function ConsequenceScreen({ outcome, onNext, meters, deltas }) {
+export default function ConsequenceScreen({ outcome, onNext, meters, deltas, isMuted }) {
   const correct = outcome?.correct ?? false;
 
   useEffect(() => {
     if (correct) {
       const audio = new Audio(correctSfx);
+      audio.muted = !!isMuted;
       audio.play().catch(() => {});
     } else {
       const audio = new Audio(incorrectSfx);
       audio.volume = 0.07;
+      audio.muted = !!isMuted;
       audio.play().catch(() => {});
       const t = setTimeout(() => { audio.pause(); }, 2000);
       return () => clearTimeout(t);

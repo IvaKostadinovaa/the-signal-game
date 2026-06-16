@@ -920,7 +920,7 @@
 .sr-char__avatar--alex       { background: linear-gradient(135deg, #93c5fd, #1d4ed8); }
 .sr-char__avatar--alex img  { transform: scale(1.05) translateX(0%); }
 .sr-char__avatar--vera       { background: linear-gradient(135deg, #a5b4fc, #4f46e5); }
-.sr-char__avatar--advertiser { background: linear-gradient(135deg, #fca5a5, #ef4444); }
+.sr-char__avatar--silencer { background: linear-gradient(135deg, #fca5a5, #ef4444); }
 .sr-char__avatar--team       { background: linear-gradient(135deg, #86efac, #16a34a); }
 
 /* .sr-char__avatar img {

@@ -57,9 +57,11 @@ function MagnifyIcon() {
   );
 }
 
-export default function VerifiedAchievementModal({ onClose }) {
+export default function VerifiedAchievementModal({ onClose, isMuted }) {
   useEffect(() => {
-    new Audio(badgeSfx).play().catch(() => {});
+    const audio = new Audio(badgeSfx);
+    audio.muted = !!isMuted;
+    audio.play().catch(() => {});
     const t = setTimeout(onClose, 3500);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps

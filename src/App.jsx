@@ -1,5 +1,6 @@
 import { useReducer, useState, useEffect, useRef } from 'react';
 import clockSfx from './audio/clock.mp3';
+import backgroundSfx from './audio/background.mp3';
 import { useNavigate } from 'react-router-dom';
 import { stories as ALL_STORIES, CHARACTERS, LEVELS, LEVEL_STORIES } from './game/gameData.js';
 import MetricsBar from './components/MetricsBar.jsx';
@@ -108,12 +109,13 @@ function reducer(state, action) {
       // Speed: time-based (0–20 pts), plus verify costs speed (intentionally slower)
       const initialTime = action.initialTime || story.initialTime || 1;
       const timeRatio = action.timed ? 0 : Math.max(0, Math.min(1, (action.timeLeft || 0) / initialTime));
-      const verifyPenalty = !isCallPhase && action.decision === 'verify' ? (d.speed || -8) : 0;
-      const speedDelta = action.timed ? -20 : Math.round(timeRatio * 20) + verifyPenalty;
+      const isVerify = !isCallPhase && action.decision === 'verify';
+      const speedDelta = action.timed ? -20 :
+        isVerify ? (d.speed || -8) : Math.round(timeRatio * 20);
 
       // Correct decisions always give +trust (min +5) and never increase legalRisk
       const trustDelta = isCorrect ? Math.max(d.trust || 0, 15) : (d.trust || 0);
-      const rawLegalDelta = isCorrect ? 0 : Math.max(d.legalRisk || 0, 5);
+      const rawLegalDelta = (isCorrect || action.decision === 'drop') ? 0 : Math.max(d.legalRisk || 0, 5);
       const legalDelta = state.currentLevel === 1 ? 0 : rawLegalDelta;
 
       const isBribeDecline = isCallPhase && action.decision === 'drop';
@@ -149,6 +151,9 @@ function reducer(state, action) {
     case 'NEXT': {
       if (state.bribeAccepted) {
         return { ...state, view: 'ending', bribeAccepted: false, lawsuitEnding: true };
+      }
+      if (state.meters.legalRisk >= 100) {
+        return { ...state, view: 'ending' };
       }
       if (state.postBribeReturnToStory) {
         return {
@@ -193,6 +198,16 @@ function reducer(state, action) {
     case 'NAVIGATE':
       return { ...state, view: action.view };
 
+    case 'RESET_TO_MENU':
+      return { ...initialState, view: 'splash' };
+
+    case 'LOAD_SAVE':
+      return {
+        ...initialState,
+        ...action.save,
+        view: 'levelSelect',
+      };
+
     case 'SHOW_VERA_REPORT':
       return { ...state, showVERAReport: true };
     case 'HIDE_VERA_REPORT':
@@ -218,8 +233,36 @@ const VIEW_TO_PATH = {
   ending:      '/ending',
 };
 
+const SAVE_KEY = 'the_signal_save';
+
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function writeSave(state) {
+  const save = {
+    levelProgress: state.levelProgress,
+    currentLevel: state.currentLevel,
+    meters: state.meters,
+    xp: state.xp,
+    decisions: state.decisions,
+    badges: state.badges,
+    correctDecisions: state.correctDecisions,
+    verifyCount: state.verifyCount,
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+}
+
+function clearSave() {
+  localStorage.removeItem(SAVE_KEY);
+}
+
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [hasSave, setHasSave] = useState(() => !!loadSave());
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const navigate = useNavigate();
 
@@ -229,6 +272,13 @@ export default function App() {
       navigate(path, { replace: false });
     }
   }, [state.view]);
+
+  useEffect(() => {
+    if (state.view === 'levelSelect') {
+      writeSave(state);
+      setHasSave(true);
+    }
+  }, [state.view, state.levelProgress]);
 
   const selectedStory = ALL_STORIES.find((s) => s.id === state.selectedStoryId) ?? null;
 
@@ -248,9 +298,28 @@ export default function App() {
   const speedAchievementShown = useRef(false);
   const verifiedAchievementShown = useRef(false);
   const clockAudioRef = useRef(null);
+  const bgAudioRef = useRef(null);
   const [deltaParticles, setDeltaParticles] = useState([]);
   const [metricFlash, setMetricFlash] = useState({});
   const particleIdRef = useRef(0);
+
+  useEffect(() => {
+    if (state.view === 'splash') {
+      if (bgAudioRef.current) {
+        bgAudioRef.current.pause();
+        bgAudioRef.current = null;
+      }
+      return;
+    }
+    if (!bgAudioRef.current) {
+      const audio = new Audio(backgroundSfx);
+      audio.loop = true;
+      audio.volume = 0.3;
+      audio.muted = isMutedRef.current;
+      audio.play().catch(() => {});
+      bgAudioRef.current = audio;
+    }
+  }, [state.view]);
 
   useEffect(() => {
     if (timeLeft === 5) {
@@ -375,8 +444,12 @@ export default function App() {
     return (
       <>
         <SplashScreen
-          onPlay={() => dispatch({ type: 'PLAY' })}
-          onContinue={() => dispatch({ type: 'PLAY' })}
+          hasSave={hasSave}
+          onPlay={() => { clearSave(); setHasSave(false); dispatch({ type: 'PLAY' }); }}
+          onContinue={() => {
+            const save = loadSave();
+            if (save) dispatch({ type: 'LOAD_SAVE', save });
+          }}
           onHowToPlay={() => setShowHowToPlay(true)}
         />
         {showHowToPlay && <HowToPlay onClose={() => setShowHowToPlay(false)} />}
@@ -404,7 +477,7 @@ export default function App() {
           postConsequencePending.current = false;
           pendingBadgesRef.current = [];
         }}
-        onMainMenu={() => dispatch({ type: 'NAVIGATE', view: 'splash' })}
+        onMainMenu={() => dispatch({ type: 'RESET_TO_MENU' })}
         earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge, verified: earnedVerifiedBadge }}
       />
     );
@@ -450,6 +523,7 @@ export default function App() {
           isMutedRef.current = next;
           setIsMuted(next);
           if (clockAudioRef.current) clockAudioRef.current.muted = next;
+          if (bgAudioRef.current) bgAudioRef.current.muted = next;
         }}
       />
       <div className="app-body">
@@ -463,6 +537,7 @@ export default function App() {
               bribeHandled={state.bribeHandled}
               correctDecisions={state.correctDecisions}
               earnedBadges={{ trust: earnedTrustBadge, speed: earnedSpeedBadge, verified: earnedVerifiedBadge }}
+              isMuted={isMuted}
             />
           )}
           {state.view === 'consequence' && (
@@ -470,6 +545,7 @@ export default function App() {
               outcome={state.lastOutcome}
               meters={state.meters}
               deltas={state.lastDeltas}
+              isMuted={isMuted}
               onNext={() => {
                 if (pendingBadgesRef.current.length > 0) {
                   postConsequencePending.current = true;
@@ -522,9 +598,9 @@ export default function App() {
         </div>
       )}
 
-      {showTrustModal && <TrustAchievementModal onClose={() => { setShowTrustModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
-      {showSpeedModal && <SpeedAchievementModal onClose={() => { setShowSpeedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
-      {showVerifiedModal && <VerifiedAchievementModal onClose={() => { setShowVerifiedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+      {showTrustModal && <TrustAchievementModal isMuted={isMuted} onClose={() => { setShowTrustModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+      {showSpeedModal && <SpeedAchievementModal isMuted={isMuted} onClose={() => { setShowSpeedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
+      {showVerifiedModal && <VerifiedAchievementModal isMuted={isMuted} onClose={() => { setShowVerifiedModal(false); if (postConsequencePending.current) drainBadgesOrNext(); }} />}
 
     </div>
   );
